@@ -6,12 +6,35 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
-	
+
 	"github.com/davidkuda/lyricsapi/lyricsapi"
 )
 
 func ListSongs() []string {
-	return []string{}
+	os.Setenv("DATABASE_URL", "postgres://lyricsapi:lyricsapi@localhost:5432/lyricsapi")
+	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	query := "SELECT artist, song_name FROM songs ORDER BY artist ASC;"
+	// ? How to know how to use conn.Query?
+	rows, err := conn.Query(context.Background(), query)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Query failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	var songs []string
+	var artist, song string
+	for rows.Next() {
+		rows.Scan(&artist, &song)
+		songs = append(songs, fmt.Sprintf("%s -- %s", artist, song))
+	}
+
+	return songs
 }
 
 func GetSong(songName string) lyricsapi.Song {
@@ -23,15 +46,15 @@ func GetSong(songName string) lyricsapi.Song {
 		os.Exit(1)
 	}
 	defer conn.Close(context.Background())
-	
+
 	song := lyricsapi.Song{}
 
-	err = conn.QueryRow(context.Background(), "select artist from songs;").Scan(&song.Artist)
+	query := fmt.Sprintf("SELECT artist, song_name, lyrics FROM songs WHERE song_name = '%s';", songName)
+	err = conn.QueryRow(context.Background(), query).Scan(&song.Artist, &song.SongName, &song.SongText)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println(song)
 	return song
 }

@@ -48,8 +48,25 @@ func GetSong(songName string) Song {
 
 	song := Song{}
 
-	query := fmt.Sprintf("SELECT artist, song_name, song_text FROM songs WHERE song_name = '%s';", songName)
-	err = conn.QueryRow(context.Background(), query).Scan(&song.Artist, &song.SongName, &song.SongText)
+	query := fmt.Sprintf(
+		`SELECT
+			artist,
+			song_name,
+			song_text,
+			chords,
+			copyright
+		FROM songs
+		WHERE song_name = '%s';`,
+		songName,
+	)
+
+	err = conn.QueryRow(context.Background(), query).Scan(
+		&song.Artist,
+		&song.SongName,
+		&song.SongText,
+		&song.Chords,
+		&song.Copyright,
+	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
 		os.Exit(1)

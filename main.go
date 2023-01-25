@@ -19,6 +19,6 @@ type Song struct {
 }
 
 func main() {
-	http.HandleFunc("/songs/", handleListSongs)
+	http.HandleFunc("/songs/", handleSongs)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

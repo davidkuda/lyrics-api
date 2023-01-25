@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
 )
 
 type Songs []Song
@@ -18,5 +19,6 @@ type Song struct {
 }
 
 func main() {
-	fmt.Println("Hello World")
+	http.HandleFunc("/songs/", handleListSongs)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

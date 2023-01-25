@@ -1,6 +1,7 @@
-package dbio
+package main
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ func TestListSong(t *testing.T) {
 	}
 	same := true
 	for i, song := range songs {
-		if song != expected[i] {
+		if fmt.Sprintf("%s -- %s", song.Artist, song.SongName) != expected[i] {
 			same = false
 			break
 		}

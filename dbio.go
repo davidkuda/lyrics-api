@@ -1,4 +1,4 @@
-package dbio
+package main
 
 import (
 	"context"
@@ -6,11 +6,9 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
-
-	"github.com/davidkuda/lyricsapi/lyricsapi"
 )
 
-func ListSongs() []string {
+func ListSongs() Songs {
 	os.Setenv("DATABASE_URL", "postgres://lyricsapi:lyricsapi@localhost:5432/lyricsapi")
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -27,17 +25,18 @@ func ListSongs() []string {
 		os.Exit(1)
 	}
 
-	var songs []string
+	var songs Songs
 	var artist, song string
 	for rows.Next() {
 		rows.Scan(&artist, &song)
-		songs = append(songs, fmt.Sprintf("%s -- %s", artist, song))
+		song := Song{Artist: artist, SongName: song}
+		songs = append(songs, song)
 	}
 
 	return songs
 }
 
-func GetSong(songName string) lyricsapi.Song {
+func GetSong(songName string) Song {
 	// TODO: Validate input, avoid SQLInjection, check against all available songs, store all songs in memory for fast check
 	os.Setenv("DATABASE_URL", "postgres://lyricsapi:lyricsapi@localhost:5432/lyricsapi")
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
@@ -47,7 +46,7 @@ func GetSong(songName string) lyricsapi.Song {
 	}
 	defer conn.Close(context.Background())
 
-	song := lyricsapi.Song{}
+	song := Song{}
 
 	query := fmt.Sprintf("SELECT artist, song_name, song_text FROM songs WHERE song_name = '%s';", songName)
 	err = conn.QueryRow(context.Background(), query).Scan(&song.Artist, &song.SongName, &song.SongText)

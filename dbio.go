@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func ListSongs() Songs {
@@ -73,4 +76,19 @@ func GetSong(songName string) Song {
 	}
 
 	return song
+}
+
+func stdSqlWay() {
+	// continue from minute 11: https://www.youtube.com/watch?v=2XCaKYH0Ydo
+	dsn := url.URL{ // "data source name": string of the url to the database
+		Scheme: "postgres",
+		Host:   "localhost:5432",
+		User:   url.UserPassword("lyricsapi", "lyricsapi"),
+		Path:   "lyricsapi",
+	}
+	db, err := sql.Open("pgx", dsn.String()) // returns a pool of connections
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "sql.Open", err)
+	}
+	defer db.Close()
 }

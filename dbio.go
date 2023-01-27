@@ -78,7 +78,7 @@ func GetSong(songName string) Song {
 	return song
 }
 
-func stdSqlWay() {
+func stdSqlWay() Song {
 	// continue from minute 11: https://www.youtube.com/watch?v=2XCaKYH0Ydo
 	dsn := url.URL{ // "data source name": string of the url to the database
 		Scheme: "postgres",
@@ -90,5 +90,38 @@ func stdSqlWay() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open", err)
 	}
-	defer db.Close()
+	defer func() {
+		_ = db.Close()
+		fmt.Println("db conn closed")
+	}()
+
+	song := Song{}
+
+	songName := "Start Me Up"
+	query := fmt.Sprintf(
+		`SELECT
+			artist,
+			song_name,
+			song_text,
+			chords,
+			copyright
+		FROM songs
+		WHERE song_name = '%s';`,
+		songName,
+	)
+
+	row := db.QueryRowContext(context.Background(), query)
+	if row.Err(); err != nil {
+		fmt.Println("db.QueryRow", err)
+	}
+
+	row.Scan(
+		&song.Artist,
+		&song.SongName,
+		&song.SongText,
+		&song.Chords,
+		&song.Copyright,
+	)
+	
+	return song
 }

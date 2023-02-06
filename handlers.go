@@ -45,7 +45,7 @@ func handleSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
 }
 
 func listSongs(w http.ResponseWriter, r *http.Request, cfg *appConfig) {
-	songs := ListSongs()
+	songs := ListSongs(cfg)
 	// ? how to only send the fields Song.Artist and Song.SongName? i.e. omit SongText
 	body, err := json.Marshal(songs)
 	if err != nil {

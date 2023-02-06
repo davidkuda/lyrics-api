@@ -23,15 +23,17 @@ func getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error)
 	return sql.Open("pgx", dsn.String())
 }
 
+func ListSongs(cfg *appConfig) Songs {
+	ctx := context.Background()
+	conn, err := cfg.db.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(context.Background())
+	defer conn.Close()
 
 	query := "SELECT artist, song_name FROM songs ORDER BY artist ASC;"
-	// ? How to know how to use conn.Query?
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.QueryContext(ctx, query)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Query failed: %v\n", err)
 		os.Exit(1)

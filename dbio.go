@@ -11,9 +11,18 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-func ListSongs() Songs {
-	os.Setenv("DATABASE_URL", "postgres://lyricsapi:lyricsapi@localhost:5432/lyricsapi")
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+// returns a pool of connections to the postgres db according to the args
+func getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error) {
+	// "data source name": string of the url to the database
+	dsn := url.URL{
+		Scheme: "postgres",
+		Host:   dbAddr,
+		User:   url.UserPassword(dbUser, dbPassword),
+		Path:   dbName,
+	}
+	return sql.Open("pgx", dsn.String())
+}
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)

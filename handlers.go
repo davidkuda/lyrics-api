@@ -7,16 +7,20 @@ import (
 	"strings"
 )
 
-func handleSongs(w http.ResponseWriter, r *http.Request) {
+func setupHandlers(mux *http.ServeMux, config appConfig) {
+	mux.Handle("/songs/", &app{config: config, handler: handleSongs})
+}
+
+func handleSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
 	if len(r.URL.Path) > len("/songs/") {
 		id := strings.TrimPrefix(r.URL.Path, "/songs/")
-		returnSong(w, r, id)
+		returnSong(w, r, id, &cfg)
 	} else {
-		listSongs(w, r)
+		listSongs(w, r, &cfg)
 	}
 }
 
-func listSongs(w http.ResponseWriter, r *http.Request) {
+func listSongs(w http.ResponseWriter, r *http.Request, cfg *appConfig) {
 	songs := ListSongs()
 	// ? how to only send the fields Song.Artist and Song.SongName? i.e. omit SongText
 	body, err := json.Marshal(songs)
@@ -30,9 +34,10 @@ func listSongs(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
-func returnSong(w http.ResponseWriter, r *http.Request, id string) {
+func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg *appConfig) {
 	// TODO: Validate if song in songs; maybe in dbio? or here? dbio could return err if song not in db
-	song := GetSong(id)
+	// song := GetSong(id)
+	song := stdSqlWay()
 	body, err := json.Marshal(song)
 	if err != nil {
 		status := http.StatusInternalServerError

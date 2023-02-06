@@ -1,9 +1,25 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+	"os"
 )
+
+type appConfig struct {
+	logger *log.Logger
+	db     *sql.DB
+}
+
+type app struct {
+	config appConfig
+	handler func(w http.ResponseWriter, r *http.Request, config appConfig)
+}
+
+func (a *app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	a.handler(w, r, a.config)
+}
 
 type Songs []Song
 
@@ -26,6 +42,32 @@ type Song struct {
 }
 
 func main() {
-	http.HandleFunc("/songs/", handleSongs)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	listenAddr := os.Getenv("LISTEN_ADDR")
+	if len(listenAddr) == 0 {
+		listenAddr = ":8008"
+	}
+
+	dbAddr := os.Getenv("DB_ADDR")
+	dbName := os.Getenv("DB_NAME")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+
+	if len(dbAddr) == 0 || len(dbName) == 0 || len(dbUser) == 0 || len(dbPassword) == 0 {
+		log.Fatal("Must specify db details as env var: DB_ADDR, DB_NAME, DB_USER and DB_PASSWORD")
+	}
+
+	db, err := getDatabaseConn(dbAddr, dbName, dbUser, dbPassword)
+	if err != nil {
+		log.Fatal("getDatabaseConn(): Unable to get conn")
+	}
+
+	cfg := appConfig{
+		logger: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
+		db:     db,
+	}
+	
+	mux := http.NewServeMux()
+	setupHandlers(mux, cfg)
+
+	log.Fatal(http.ListenAndServe(listenAddr, mux))
 }

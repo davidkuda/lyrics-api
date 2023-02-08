@@ -59,7 +59,11 @@ func main() {
 
 	db, err := getDatabaseConn(dbAddr, dbName, dbUser, dbPassword)
 	if err != nil {
-		log.Fatal("getDatabaseConn(): Unable to get conn")
+		log.Fatalf("getDatabaseConn(): %v", err)
+	}
+	
+	if err := db.Ping(); err != nil {
+		log.Fatalf("db.Ping(): %v", err)
 	}
 
 	cfg := appConfig{

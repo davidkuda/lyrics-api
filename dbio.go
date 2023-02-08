@@ -53,7 +53,6 @@ func ListSongs(cfg appConfig) Songs {
 }
 
 func GetSong(songName string, cfg appConfig) (Song, error) {
-	// TODO: Validate input, avoid SQLInjection, check against all available songs, store all songs in memory for fast check
 	ctx := context.Background()
 	conn, err := cfg.db.Conn(ctx)
 	if err != nil {
@@ -63,19 +62,18 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 
 	song := Song{}
 
-	query := fmt.Sprintf(
-		`SELECT
+	query := `
+		SELECT
 			artist,
 			song_name,
 			song_text,
 			chords,
 			copyright
 		FROM songs
-		WHERE song_name = '%s';`,
-		songName,
-	)
+		WHERE song_name = $1`
 
-	row := conn.QueryRowContext(context.Background(), query)
+	row := conn.QueryRowContext(context.Background(), query, songName)
+
 	if row.Err(); err != nil {
 		cfg.logger.Println("conn.QueryRow", err)
 		return song, errors.New("QueryNotSuccesful")

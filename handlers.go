@@ -31,8 +31,8 @@ func logRequest(r *http.Request, cfg *appConfig) {
 }
 
 func setupHandlers(mux *http.ServeMux, config appConfig) {
-	a := &app{config: config, handler: handleSongs}
-	mux.Handle("/songs/", &app{config: config, handler: handleSongs})
+	a := &app{config: config}
+	mux.HandleFunc("/songs/", a.handleSongs)
 	mux.HandleFunc("/healthz/", a.HealthCheckHandler)
 }
 
@@ -41,13 +41,13 @@ func (a *app) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Health is ok"))
 }
 
-func handleSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
-	logRequest(r, &cfg)
+func (a *app) handleSongs(w http.ResponseWriter, r *http.Request) {
+	logRequest(r, &a.config)
 	if len(r.URL.Path) > len("/songs/") {
 		id := strings.TrimPrefix(r.URL.Path, "/songs/")
-		returnSong(w, r, id, cfg)
+		returnSong(w, r, id, a.config)
 	} else {
-		listSongs(w, r, cfg)
+		listSongs(w, r, a.config)
 	}
 }
 

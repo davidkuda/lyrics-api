@@ -31,7 +31,14 @@ func logRequest(r *http.Request, cfg *appConfig) {
 }
 
 func setupHandlers(mux *http.ServeMux, config appConfig) {
+	a := &app{config: config, handler: handleSongs}
 	mux.Handle("/songs/", &app{config: config, handler: handleSongs})
+	mux.HandleFunc("/healthz/", a.HealthCheckHandler)
+}
+
+func (a *app) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Health is ok"))
 }
 
 func handleSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {

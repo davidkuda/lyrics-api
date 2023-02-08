@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
+
+var ErrSongDoesNotExist = errors.New("Song does not exist")
 
 // returns a pool of connections to the postgres db according to the args
 func getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error) {
@@ -74,7 +77,8 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 
 	row := conn.QueryRowContext(context.Background(), query)
 	if row.Err(); err != nil {
-		fmt.Println("conn.QueryRow", err)
+		cfg.logger.Println("conn.QueryRow", err)
+		return song, errors.New("QueryNotSuccesful")
 	}
 
 	row.Scan(
@@ -84,6 +88,10 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 		&song.Chords,
 		&song.Copyright,
 	)
+	
+	if len(song.SongName) == 0 {
+		return song, ErrSongDoesNotExist
+	}
 
-	return song
+	return song, nil
 }

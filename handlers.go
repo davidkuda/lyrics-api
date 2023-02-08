@@ -60,7 +60,21 @@ func listSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
 
 func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg appConfig) {
 	// TODO: Validate if song in songs; maybe in dbio? or here? dbio could return err if song not in db
-	song := GetSong(id, cfg)
+	song, err := GetSong(id, cfg)
+	if err != nil {
+		if err == ErrSongDoesNotExist {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			resp := make(map[string]string)
+			resp["message"] = err.Error()
+			jsonResp, err := json.Marshal(resp)
+			if err != nil {
+				cfg.logger.Printf("Error happened in JSON marshal. Err: %s", err)
+			}
+			w.Write(jsonResp)
+			return
+		}
+	}
 	body, err := json.Marshal(song)
 	if err != nil {
 		status := http.StatusInternalServerError

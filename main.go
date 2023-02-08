@@ -17,6 +17,7 @@ type app struct {
 	handler func(w http.ResponseWriter, r *http.Request, config appConfig)
 }
 
+// implementing ServeHTTP satisfies the http.Handler interface
 func (a *app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.handler(w, r, a.config)
 }

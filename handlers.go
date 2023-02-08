@@ -38,13 +38,13 @@ func handleSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
 	logRequest(r, &cfg)
 	if len(r.URL.Path) > len("/songs/") {
 		id := strings.TrimPrefix(r.URL.Path, "/songs/")
-		returnSong(w, r, id, &cfg)
+		returnSong(w, r, id, cfg)
 	} else {
-		listSongs(w, r, &cfg)
+		listSongs(w, r, cfg)
 	}
 }
 
-func listSongs(w http.ResponseWriter, r *http.Request, cfg *appConfig) {
+func listSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
 	songs := ListSongs(cfg)
 	// ? how to only send the fields Song.Artist and Song.SongName? i.e. omit SongText
 	body, err := json.Marshal(songs)
@@ -58,7 +58,7 @@ func listSongs(w http.ResponseWriter, r *http.Request, cfg *appConfig) {
 	w.Write(body)
 }
 
-func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg *appConfig) {
+func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg appConfig) {
 	// TODO: Validate if song in songs; maybe in dbio? or here? dbio could return err if song not in db
 	song := GetSong(id, cfg)
 	body, err := json.Marshal(song)

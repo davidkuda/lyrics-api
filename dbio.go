@@ -22,7 +22,7 @@ func getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error)
 	return sql.Open("pgx", dsn.String())
 }
 
-func ListSongs(cfg *appConfig) Songs {
+func ListSongs(cfg appConfig) Songs {
 	ctx := context.Background()
 	conn, err := cfg.db.Conn(ctx)
 	if err != nil {
@@ -49,7 +49,7 @@ func ListSongs(cfg *appConfig) Songs {
 	return songs
 }
 
-func GetSong(songName string, cfg *appConfig) Song {
+func GetSong(songName string, cfg appConfig) (Song, error) {
 	// TODO: Validate input, avoid SQLInjection, check against all available songs, store all songs in memory for fast check
 	ctx := context.Background()
 	conn, err := cfg.db.Conn(ctx)

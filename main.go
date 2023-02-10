@@ -81,6 +81,7 @@ func main() {
 		listenAddr = ":8008"
 	}
 
+	log.Printf("Starting app; listening on port %s", listenAddr)
 	// ? ListenAndServe: If you terminate the process, the last requests may get lost. Check Ardan Labs "Service" to see an alternative.
 	log.Fatal(http.ListenAndServe(listenAddr, mux))
 }

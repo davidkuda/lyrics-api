@@ -25,21 +25,21 @@ func (a *app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type Songs []Song
 
 // Song contains all data related to a piece of music
+// SongID: slug of the song, song name with hyphens, e.g. "wish-you-were-here"
+// Artist: artist of the song, e.g. "Pink Floyd"
+// SongName: name of the song
+// SongText: lyrics, text of the song
+// Chords: chords of the song, plain text
+// Copyright: copyright information of the song
+// Covers: list of URLs to great covers, e.g. on YouTube
 type Song struct {
-	// slug of the song, song name with hyphens, e.g. "wish-you-were-here"
-	SongID string `json:"song_id"`
-	// artist of the song, e.g. "Pink Floyd"
-	Artist string `json:"artist"`
-	// name of the song
-	SongName string `json:"song_name"`
-	// lyrics, text of the song
-	SongText string `json:"song_text,omitempty"`
-	// chords of the song, plain text
-	Chords string `json:"chords,omitempty"`
-	// copyright information of the song
-	Copyright string `json:"copyright,omitempty"`
-	// Covers: list of URLs to great covers, e.g. on YouTube
-	Covers []string `json:"covers,omitempty"`
+	SongID    string   `json:"song_id"`
+	Artist    string   `json:"artist"`
+	SongName  string   `json:"song_name"`
+	SongText  string   `json:"song_text,omitempty"`
+	Chords    string   `json:"chords,omitempty"`
+	Copyright string   `json:"copyright,omitempty"`
+	Covers    []string `json:"covers,omitempty"`
 }
 
 func main() {

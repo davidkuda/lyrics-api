@@ -31,17 +31,17 @@ func logRequest(r *http.Request, cfg *appConfig) {
 }
 
 func setupHandlers(mux *http.ServeMux, config appConfig) {
-	a := &app{config: config}
+	a := &application{config: config}
 	mux.HandleFunc("/songs/", a.handleSongs)
 	mux.HandleFunc("/healthz/", a.HealthCheckHandler)
 }
 
-func (a *app) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+func (a *application) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Health is ok"))
 }
 
-func (a *app) handleSongs(w http.ResponseWriter, r *http.Request) {
+func (a *application) handleSongs(w http.ResponseWriter, r *http.Request) {
 	logRequest(r, &a.config)
 	if len(r.URL.Path) > len("/songs/") {
 		id := strings.TrimPrefix(r.URL.Path, "/songs/")

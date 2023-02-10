@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-type app struct {
+type application struct {
 	config appConfig
 
 	Domain string

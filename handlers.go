@@ -30,10 +30,9 @@ func logRequest(r *http.Request, cfg *appConfig) {
 	cfg.logger.Println(string(j))
 }
 
-func setupHandlers(mux *http.ServeMux, config appConfig) {
-	a := &application{config: config}
-	mux.HandleFunc("/songs/", a.handleSongs)
-	mux.HandleFunc("/healthz/", a.HealthCheckHandler)
+func setupHandlers(mux *http.ServeMux, app application) {
+	mux.HandleFunc("/songs/", app.handleSongs)
+	mux.HandleFunc("/healthz/", app.HealthCheckHandler)
 }
 
 func (a *application) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {

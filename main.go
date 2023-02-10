@@ -46,6 +46,8 @@ type Song struct {
 
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
 func main() {
+	var app application
+
 	dbAddr := os.Getenv("DB_ADDR")
 	dbName := os.Getenv("DB_NAME")
 	dbUser := os.Getenv("DB_USER")
@@ -65,14 +67,14 @@ func main() {
 		log.Fatalf("db.Ping(): %v", err)
 	}
 
-	cfg := appConfig{
+	app.config = appConfig{
 		// ? how to append log to a file or to a database? use a Tee on os level; Stdout and Stderr is the conventional choice.
 		logger: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
 		db:     db,
 	}
 
 	mux := http.NewServeMux()
-	setupHandlers(mux, cfg)
+	setupHandlers(mux, app)
 
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	if len(listenAddr) == 0 {

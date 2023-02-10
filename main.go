@@ -48,6 +48,11 @@ type Song struct {
 func main() {
 	var app application
 
+	app.JWTSecret = os.Getenv("JWT_SECRET")
+	app.JWTIssuer = os.Getenv("JWT_ISSUER")
+	app.JWTAudience = os.Getenv("JWT_AUDIENCE")
+	app.CookieDomain = os.Getenv("COOKIE_DOMAIN")
+
 	dbAddr := os.Getenv("DB_ADDR")
 	dbName := os.Getenv("DB_NAME")
 	dbUser := os.Getenv("DB_USER")

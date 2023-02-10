@@ -14,12 +14,6 @@ type appConfig struct {
 
 type app struct {
 	config appConfig
-	handler func(w http.ResponseWriter, r *http.Request, config appConfig)
-}
-
-// implementing ServeHTTP satisfies the http.Handler interface
-func (a *app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.handler(w, r, a.config)
 }
 
 type Songs []Song
@@ -42,6 +36,7 @@ type Song struct {
 	Covers    []string `json:"covers,omitempty"`
 }
 
+// in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
 func main() {
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	if len(listenAddr) == 0 {
@@ -53,6 +48,7 @@ func main() {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 
+	// ! alternative: if dbAddr == "" -- shorter and easier to read
 	if len(dbAddr) == 0 || len(dbName) == 0 || len(dbUser) == 0 || len(dbPassword) == 0 {
 		log.Fatal("Must specify db details as env var: DB_ADDR, DB_NAME, DB_USER and DB_PASSWORD")
 	}
@@ -61,18 +57,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("getDatabaseConn(): %v", err)
 	}
-	
+
 	if err := db.Ping(); err != nil {
 		log.Fatalf("db.Ping(): %v", err)
 	}
 
 	cfg := appConfig{
+		// ? how to append log to a file or to a database? use a Tee on os level; Stdout and Stderr is the conventional choice.
 		logger: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
 		db:     db,
 	}
-	
+
 	mux := http.NewServeMux()
 	setupHandlers(mux, cfg)
 
+	// ? ListenAndServe: If you terminate the process, the last requests may get lost. Check Ardan Labs "Service" to see an alternative.
 	log.Fatal(http.ListenAndServe(listenAddr, mux))
 }

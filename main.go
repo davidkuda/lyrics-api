@@ -7,6 +7,18 @@ import (
 	"os"
 )
 
+type app struct {
+	config appConfig
+
+	Domain string
+
+	auth         Auth
+	JWTSecret    string
+	JWTIssuer    string
+	JWTAudience  string
+	CookieDomain string
+}
+
 type appConfig struct {
 	logger *log.Logger
 	db     *sql.DB

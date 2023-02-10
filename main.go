@@ -24,10 +24,6 @@ type appConfig struct {
 	db     *sql.DB
 }
 
-type app struct {
-	config appConfig
-}
-
 type Songs []Song
 
 // Song contains all data related to a piece of music
@@ -50,11 +46,6 @@ type Song struct {
 
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
 func main() {
-	listenAddr := os.Getenv("LISTEN_ADDR")
-	if len(listenAddr) == 0 {
-		listenAddr = ":8008"
-	}
-
 	dbAddr := os.Getenv("DB_ADDR")
 	dbName := os.Getenv("DB_NAME")
 	dbUser := os.Getenv("DB_USER")
@@ -82,6 +73,11 @@ func main() {
 
 	mux := http.NewServeMux()
 	setupHandlers(mux, cfg)
+
+	listenAddr := os.Getenv("LISTEN_ADDR")
+	if len(listenAddr) == 0 {
+		listenAddr = ":8008"
+	}
 
 	// ? ListenAndServe: If you terminate the process, the last requests may get lost. Check Ardan Labs "Service" to see an alternative.
 	log.Fatal(http.ListenAndServe(listenAddr, mux))

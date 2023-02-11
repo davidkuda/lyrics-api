@@ -8,7 +8,7 @@ import "net/http"
 // PATCH vs PUT: Patch for elements, PUT for replacing the whole row
 // /v1/lyrics/{song-name} GET -> return songtext with metadata
 func setupHandlers(mux *http.ServeMux, app application) {
-	mux.HandleFunc("/songs/", app.handleSongs)
-	mux.HandleFunc("/healthz/", app.HealthCheckHandler)
+	mux.HandleFunc("/songs", app.handleSongs)
+	mux.HandleFunc("/healthz", app.handleHealthCheck)
 	mux.HandleFunc("/authenticate", app.authenticate)
 }

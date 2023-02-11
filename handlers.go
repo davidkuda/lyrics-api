@@ -30,7 +30,7 @@ func logRequest(r *http.Request, cfg *appConfig) {
 	cfg.logger.Println(string(j))
 }
 
-func (a *application) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+func (a *application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Health is ok"))
 }

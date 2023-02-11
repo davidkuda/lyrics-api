@@ -30,9 +30,14 @@ func logRequest(r *http.Request, cfg *appConfig) {
 	cfg.logger.Println(string(j))
 }
 
-func (a *application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+func (app *application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	app.config.logger.Println("Handling HealthCheck Request")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Health is ok"))
+	w.Write([]byte("ok"))
 }
 
 func (a *application) handleSongs(w http.ResponseWriter, r *http.Request) {

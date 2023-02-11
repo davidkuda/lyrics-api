@@ -97,7 +97,7 @@ func main() {
 
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	if len(listenAddr) == 0 {
-		listenAddr = ":8008"
+		listenAddr = ":8032"
 	}
 
 	log.Printf("Starting app; listening on port %s", listenAddr)

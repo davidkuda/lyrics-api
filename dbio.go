@@ -64,6 +64,7 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 
 	query := `
 		SELECT
+			song_id,
 			artist,
 			song_name,
 			song_text,
@@ -80,13 +81,14 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 	}
 
 	row.Scan(
+		&song.SongID,
 		&song.Artist,
 		&song.SongName,
 		&song.SongText,
 		&song.Chords,
 		&song.Copyright,
 	)
-	
+
 	if len(song.SongName) == 0 {
 		return song, ErrSongDoesNotExist
 	}

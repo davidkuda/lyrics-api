@@ -53,19 +53,19 @@ func main() {
 	app.JWTIssuer = os.Getenv("JWT_ISSUER")
 	app.JWTAudience = os.Getenv("JWT_AUDIENCE")
 	app.CookieDomain = os.Getenv("COOKIE_DOMAIN")
-	
+
 	app.auth = Auth{
-		Issuer: app.JWTIssuer,
-		Audience: app.JWTAudience,
-		Secret: app.JWTSecret,
-		TokenExpiry: time.Minute * 15,
+		Issuer:        app.JWTIssuer,
+		Audience:      app.JWTAudience,
+		Secret:        app.JWTSecret,
+		TokenExpiry:   time.Minute * 15,
 		RefreshExpiry: time.Hour * 24,
 		Cookie: Cookie{
-			Path: "/",
-			Name: "__Host-refresh_token",
+			Path:   "/",
+			Name:   "__Host-refresh_token",
 			Domain: app.CookieDomain,
 		},
-}
+	}
 
 	dbAddr := os.Getenv("DB_ADDR")
 	dbName := os.Getenv("DB_NAME")

@@ -50,6 +50,30 @@ func (a *application) handleSongs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *application) authenticate(w http.ResponseWriter, r *http.Request) {
+	// read json payload
+
+	// validate user against database
+
+	// check password in db
+
+	// create a jwt user
+
+	u := JWTUser{
+		ID:        1,
+		FirstName: "Admin",
+		LastName:  "User",
+	}
+
+	tokens, err := app.auth.GenerateTokenPair(&u)
+	if err != nil {
+		// return json error
+		return
+	}
+	app.config.logger.Println(tokens.Token)
+	w.Write([]byte(tokens.Token))
+}
+
 func listSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
 	songs := ListSongs(cfg)
 	// ? how to only send the fields Song.Artist and Song.SongName? i.e. omit SongText

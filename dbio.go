@@ -95,3 +95,40 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 
 	return song, nil
 }
+
+func GetUserByEmail(email string, cfg appConfig) (*User, error) {
+	ctx := context.Background()
+	conn, err := cfg.db.Conn(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
+	}
+	defer conn.Close()
+
+	query := `
+	select
+		id, email first_name, last_name, password, created_at, updated_at
+	from User
+	where email = $1`
+
+	var user User
+	row := conn.QueryRowContext(context.Background(), query, email)
+
+	if row.Err(); err != nil {
+		cfg.logger.Println("conn.QueryRow", err)
+		return &user, errors.New("QueryNotSuccesful")
+	}
+
+	if err := row.Scan(
+		&user.ID,
+		&user.EMail,
+		&user.FirstName,
+		&user.LastName,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

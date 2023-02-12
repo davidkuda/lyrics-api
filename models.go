@@ -1,5 +1,12 @@
 package main
 
+import (
+	"errors"
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
 type User struct {
 	ID        int       `json:"id"`
 	FirstName string    `json:"first_name"`
@@ -9,4 +16,16 @@ type User struct {
 	CreatedAt time.Time `json:"-"`        // a hyphen means it's not put into the json
 	UpdatedAt time.Time `json:"-"`
 }
+
+func (u *User) PasswordMatches(plainText string) (bool, error) {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plainText)); err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			// invalid password
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	return true, nil
 }

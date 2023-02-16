@@ -140,3 +140,39 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 
 	return &user, nil
 }
+
+func CreateNewUser(u *User, cfg appConfig) error {
+	// TODO: Add a salt
+	// TODO: Check for length
+	encrPW, err := bcrypt.GenerateFromPassword([]byte(u.Password), 14)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	conn, err := cfg.db.Conn(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
+	}
+	defer conn.Close()
+
+	query := `
+		INSERT INTO users (email, password, created_at, updated_at)
+		VALUES ($1, $2, $3, $4)
+	`
+
+	res, err := conn.ExecContext(ctx, query, u.EMail, encrPW, u.CreatedAt, u.UpdatedAt)
+	if err != nil {
+		return err
+	}
+
+	nRows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if nRows != 1 {
+		return fmt.Errorf("expected 1 row to be inserted, Got: %v", nRows)
+	}
+
+	return nil
+}

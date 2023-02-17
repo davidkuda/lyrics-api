@@ -116,8 +116,6 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 	select
 		id,
 		email,
-		first_name,
-		last_name,
 		password,
 		created_at,
 		updated_at
@@ -135,8 +133,6 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 	if err := row.Scan(
 		&user.ID,
 		&user.EMail,
-		&user.FirstName,
-		&user.LastName,
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,

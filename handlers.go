@@ -82,18 +82,39 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (app *application) signin(w http.ResponseWriter, r *http.Request) {
+	logRequest(r, &app.config)
+
 	// read json payload
+	var requestPayload struct {
+		Email    string `string:"email"`
+		Password string `json:"password"`
+	}
+
+	err := app.readJSON(w, r, &requestPayload)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusBadRequest)
+	}
 
 	// validate user against database
+	user, err := GetUserByEmail(requestPayload.Email, app.config)
+	if err != nil {
+		app.errorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		return
+	}
 
 	// check password in db
+	valid, err := user.PasswordMatches(requestPayload.Password)
+	if err != nil || !valid {
+		app.errorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		return
+	}
 
 	// create a jwt user
-
 	u := JWTUser{
-		ID:        1,
-		FirstName: "Admin",
-		LastName:  "User",
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
 	}
 
 	tokens, err := app.auth.GenerateTokenPair(&u)
@@ -101,8 +122,11 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 		// return json error
 		return
 	}
-	app.config.logger.Println(tokens.Token)
-	w.Write([]byte(tokens.Token))
+
+	refreshCookie := app.auth.GetRefreshCookie(tokens.RefreshToken)
+	http.SetCookie(w, refreshCookie)
+
+	app.writeJSON(w, http.StatusAccepted, tokens)
 }
 
 func listSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {

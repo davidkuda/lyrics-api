@@ -108,7 +108,7 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 	ctx := context.Background()
 	conn, err := cfg.db.Conn(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
+		cfg.logger.Printf("sql.Open: %v\n", err)
 	}
 	defer conn.Close()
 

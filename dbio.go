@@ -137,6 +137,7 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	); err != nil {
+		cfg.logger.Println("row.Scan:", err)
 		return nil, err
 	}
 

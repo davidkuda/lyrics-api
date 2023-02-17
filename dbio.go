@@ -114,8 +114,14 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 
 	query := `
 	select
-		id, email first_name, last_name, password, created_at, updated_at
-	from User
+		id,
+		email,
+		first_name,
+		last_name,
+		password,
+		created_at,
+		updated_at
+	from users
 	where email = $1`
 
 	var user User

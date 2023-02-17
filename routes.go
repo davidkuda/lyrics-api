@@ -11,4 +11,5 @@ func setupHandlers(mux *http.ServeMux, app application) {
 	mux.HandleFunc("/songs", app.handleSongs)
 	mux.HandleFunc("/healthz", app.handleHealthCheck)
 	mux.HandleFunc("/signup", app.signup)
+	mux.HandleFunc("/signin", app.signin)
 }

@@ -9,6 +9,7 @@ import (
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var ErrSongDoesNotExist = errors.New("Song does not exist")

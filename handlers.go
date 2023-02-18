@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // ? how can you write logs to a file? can you write to stdout and to a file? (i.e. to multiple files?)

@@ -102,7 +102,7 @@ func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 	// validate user against database
 	user, err := GetUserByEmail(requestPayload.Email, app.config)
 	if err != nil {
-		app.errorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		app.errorJSON(w, errors.New("GetUserByEmail: failed"), http.StatusBadRequest)
 		return
 	}
 

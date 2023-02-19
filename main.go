@@ -9,7 +9,8 @@ import (
 )
 
 type application struct {
-	config appConfig
+	config  appConfig
+	handler func(w http.ResponseWriter, r *http.Request, config appConfig)
 
 	Domain string
 
@@ -18,6 +19,10 @@ type application struct {
 	JWTIssuer    string
 	JWTAudience  string
 	CookieDomain string
+}
+
+func (app application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	app.handler(w, r, app.config)
 }
 
 type appConfig struct {

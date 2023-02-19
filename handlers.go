@@ -45,12 +45,51 @@ func (app *application) handleHealthCheck(w http.ResponseWriter, r *http.Request
 
 func (a *application) handleSongs(w http.ResponseWriter, r *http.Request) {
 	logRequest(r, &a.config)
-	if len(r.URL.Path) > len("/songs/") {
-		id := strings.TrimPrefix(r.URL.Path, "/songs/")
-		returnSong(w, r, id, a.config)
+	if r.Method == http.MethodGet {
+		if len(r.URL.Path) > len("/songs/") {
+			id := strings.TrimPrefix(r.URL.Path, "/songs/")
+			returnSong(w, r, id, a.config)
+		} else {
+			listSongs(w, r, a.config)
+		}
+	} else if r.Method == http.MethodPost {
+		_, _, err := a.auth.GetTokenFromHeaderAndVerify(w, r)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		a.handleCreateSong(w, r)
+		// write new song to db
+	} else if r.Method == http.MethodDelete {
+		_, _, err := a.auth.GetTokenFromHeaderAndVerify(w, r)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 	} else {
 		listSongs(w, r, a.config)
 	}
+}
+
+func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request) {
+	s := Song{}
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		app.config.logger.Println("io.ReadAll:", err)
+	}
+	defer r.Body.Close()
+	if err := json.Unmarshal(data, &s); err != nil {
+		app.config.logger.Println("json.Unmarshal:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err := CreateSong(&s, app.config); err != nil {
+		app.config.logger.Println("CreateSong:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Success: Created New Song"))
 }
 
 func (app *application) signup(w http.ResponseWriter, r *http.Request) {

@@ -105,6 +105,33 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 	return song, nil
 }
 
+func CreateSong(s *Song, cfg appConfig) error {
+	ctx := context.Background()
+	conn, err := cfg.db.Conn(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
+	}
+	defer conn.Close()
+
+	query := `
+		INSERT INTO songs (
+			song_id,
+			artist,
+			song_name,
+			song_text,
+			chords,
+			copyright
+		) VALUES ($1, $2, $3, $4, $5, $6);`
+
+	if _, err := conn.ExecContext(
+		ctx, query, s.SongID, s.Artist, s.SongName, s.SongText, s.Chords, s.Copyright,
+	); err != nil {
+		cfg.logger.Println("conn.ExecContext:", err)
+		return err
+	}
+
+	return nil
+}
 func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 	ctx := context.Background()
 	conn, err := cfg.db.Conn(ctx)

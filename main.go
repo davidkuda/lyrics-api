@@ -65,6 +65,7 @@ func main() {
 	if err := db.Ping(); err != nil {
 		log.Fatalf("db.Ping(): %v", err)
 	}
+	log.Printf("Connection to database established: %s@%s", dbUser, dbName)
 
 	app.config = appConfig{
 		// ? how to append log to a file or to a database? use a Tee on os level; Stdout and Stderr is the conventional choice.

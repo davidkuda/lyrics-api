@@ -25,26 +25,6 @@ type appConfig struct {
 	db     *sql.DB
 }
 
-type Songs []Song
-
-// Song contains all data related to a piece of music
-// SongID: slug of the song, song name with hyphens, e.g. "wish-you-were-here"
-// Artist: artist of the song, e.g. "Pink Floyd"
-// SongName: name of the song
-// SongText: lyrics, text of the song
-// Chords: chords of the song, plain text
-// Copyright: copyright information of the song
-// Covers: list of URLs to great covers, e.g. on YouTube
-type Song struct {
-	SongID    string   `json:"song_id"`
-	Artist    string   `json:"artist"`
-	SongName  string   `json:"song_name"`
-	SongText  string   `json:"song_text,omitempty"`
-	Chords    string   `json:"chords,omitempty"`
-	Copyright string   `json:"copyright,omitempty"`
-	Covers    []string `json:"covers,omitempty"`
-}
-
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
 func main() {
 	var app application

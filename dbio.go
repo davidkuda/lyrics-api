@@ -124,6 +124,35 @@ func CreateSong(s *Song, cfg appConfig) error {
 
 	return nil
 }
+
+func DeleteSong(songID string, cfg appConfig) error {
+	ctx := context.Background()
+	conn, err := cfg.db.Conn(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
+	}
+	defer conn.Close()
+
+	query := "DELETE FROM songs WHERE song_id = $1;"
+
+	res, err := conn.ExecContext(ctx, query, songID)
+	if err != nil {
+		cfg.logger.Println("conn.ExecContext:", err)
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		cfg.logger.Println("res.RowsAffected:", err)
+		return err
+	}
+	if n == 0 {
+		return errors.New("Delete failed: Did not find song with id " + songID)
+	}
+
+	return nil
+}
+
 func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 	ctx := context.Background()
 	conn, err := cfg.db.Conn(ctx)

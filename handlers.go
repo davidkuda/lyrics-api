@@ -100,6 +100,30 @@ func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request)
 	w.Write([]byte("Success: Created New Song"))
 }
 
+func (app *application) handleDeleteSong(w http.ResponseWriter, r *http.Request) {
+	s := Song{}
+	data, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		app.config.logger.Println("io.ReadAll:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.Unmarshal(data, &s); err != nil {
+		app.config.logger.Println("json.Unmarshal:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := DeleteSong(s.SongID, app.config); err != nil {
+		app.config.logger.Println("DeleteSong:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Success: Deleted Song with ID " + s.SongID))
+}
 func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	logRequest(r, &app.config)
 	if r.Method != http.MethodPost {

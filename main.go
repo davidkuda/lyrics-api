@@ -25,11 +25,6 @@ func (app application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	app.handler(w, r, app.config)
 }
 
-type appConfig struct {
-	logger *log.Logger
-	db     *sql.DB
-}
-
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
 func main() {
 	var app application

@@ -10,6 +10,9 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/davidkuda/lyricsapi/config"
+	"github.com/davidkuda/lyricsapi/models"
 )
 
 var ErrSongDoesNotExist = errors.New("Song does not exist")
@@ -26,9 +29,9 @@ func getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error)
 	return sql.Open("pgx", dsn.String())
 }
 
-func ListSongs(cfg appConfig) Songs {
+func ListSongs(cfg config.AppConfig) models.Songs {
 	ctx := context.Background()
-	conn, err := cfg.db.Conn(ctx)
+	conn, err := cfg.DB.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
@@ -42,26 +45,26 @@ func ListSongs(cfg appConfig) Songs {
 		os.Exit(1)
 	}
 
-	var songs Songs
+	var songs models.Songs
 	var artist, song, song_id string
 	for rows.Next() {
 		rows.Scan(&artist, &song, &song_id)
-		song := Song{Artist: artist, SongName: song, SongID: song_id}
+		song := models.Song{Artist: artist, SongName: song, SongID: song_id}
 		songs = append(songs, song)
 	}
 
 	return songs
 }
 
-func GetSong(songName string, cfg appConfig) (Song, error) {
+func GetSong(songName string, cfg config.AppConfig) (models.Song, error) {
 	ctx := context.Background()
-	conn, err := cfg.db.Conn(ctx)
+	conn, err := cfg.DB.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}
 	defer conn.Close()
 
-	song := Song{}
+	song := models.Song{}
 
 	query := `
 		SELECT
@@ -77,7 +80,7 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 	row := conn.QueryRowContext(context.Background(), query, songName)
 
 	if row.Err(); err != nil {
-		cfg.logger.Println("conn.QueryRow", err)
+		cfg.Logger.Println("conn.QueryRow", err)
 		return song, errors.New("QueryNotSuccesful")
 	}
 
@@ -97,9 +100,9 @@ func GetSong(songName string, cfg appConfig) (Song, error) {
 	return song, nil
 }
 
-func CreateSong(s *Song, cfg appConfig) error {
+func CreateSong(s *models.Song, cfg config.AppConfig) error {
 	ctx := context.Background()
-	conn, err := cfg.db.Conn(ctx)
+	conn, err := cfg.DB.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}
@@ -118,16 +121,16 @@ func CreateSong(s *Song, cfg appConfig) error {
 	if _, err := conn.ExecContext(
 		ctx, query, s.SongID, s.Artist, s.SongName, s.SongText, s.Chords, s.Copyright,
 	); err != nil {
-		cfg.logger.Println("conn.ExecContext:", err)
+		cfg.Logger.Println("conn.ExecContext:", err)
 		return err
 	}
 
 	return nil
 }
 
-func DeleteSong(songID string, cfg appConfig) error {
+func DeleteSong(songID string, cfg config.AppConfig) error {
 	ctx := context.Background()
-	conn, err := cfg.db.Conn(ctx)
+	conn, err := cfg.DB.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}
@@ -137,13 +140,13 @@ func DeleteSong(songID string, cfg appConfig) error {
 
 	res, err := conn.ExecContext(ctx, query, songID)
 	if err != nil {
-		cfg.logger.Println("conn.ExecContext:", err)
+		cfg.Logger.Println("conn.ExecContext:", err)
 		return err
 	}
 
 	n, err := res.RowsAffected()
 	if err != nil {
-		cfg.logger.Println("res.RowsAffected:", err)
+		cfg.Logger.Println("res.RowsAffected:", err)
 		return err
 	}
 	if n == 0 {
@@ -153,11 +156,11 @@ func DeleteSong(songID string, cfg appConfig) error {
 	return nil
 }
 
-func GetUserByEmail(email string, cfg appConfig) (*User, error) {
+func GetUserByEmail(email string, cfg config.AppConfig) (*models.User, error) {
 	ctx := context.Background()
-	conn, err := cfg.db.Conn(ctx)
+	conn, err := cfg.DB.Conn(ctx)
 	if err != nil {
-		cfg.logger.Printf("sql.Open: %v\n", err)
+		cfg.Logger.Printf("sql.Open: %v\n", err)
 	}
 	defer conn.Close()
 
@@ -171,11 +174,11 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 	from users
 	where email = $1`
 
-	var user User
+	var user models.User
 	row := conn.QueryRowContext(context.Background(), query, email)
 
 	if row.Err(); err != nil {
-		cfg.logger.Println("conn.QueryRow", err)
+		cfg.Logger.Println("conn.QueryRow", err)
 		return &user, errors.New("QueryNotSuccesful")
 	}
 
@@ -186,14 +189,14 @@ func GetUserByEmail(email string, cfg appConfig) (*User, error) {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	); err != nil {
-		cfg.logger.Println("row.Scan:", err)
+		cfg.Logger.Println("row.Scan:", err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func CreateNewUser(u *User, cfg appConfig) error {
+func CreateNewUser(u *models.User, cfg config.AppConfig) error {
 	// TODO: Add a salt
 	// TODO: Check for length
 	encrPW, err := bcrypt.GenerateFromPassword([]byte(u.Password), 14)
@@ -202,7 +205,7 @@ func CreateNewUser(u *User, cfg appConfig) error {
 	}
 
 	ctx := context.Background()
-	conn, err := cfg.db.Conn(ctx)
+	conn, err := cfg.DB.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}

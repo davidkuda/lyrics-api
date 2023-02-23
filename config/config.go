@@ -6,6 +6,6 @@ import (
 )
 
 type AppConfig struct {
-	logger *log.Logger
-	db     *sql.DB
+	Logger *log.Logger
+	DB     *sql.DB
 }

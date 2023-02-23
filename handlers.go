@@ -10,6 +10,14 @@ import (
 	"time"
 )
 
+type DatabaseRepo interface {
+	Connection() *sql.DB
+	getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error)
+	ListSongs(cfg appConfig) Songs
+	GetSong(songName string, cfg appConfig) (Song, error)
+	GetUserByEmail(email string, cfg appConfig) (*User, error)
+}
+
 // ? how can you write logs to a file? can you write to stdout and to a file? (i.e. to multiple files?)
 type requestLog struct {
 	URL      string `json:"url"`

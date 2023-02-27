@@ -1,11 +1,13 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/davidkuda/lyricsapi/config"
+	"github.com/davidkuda/lyricsapi/dbio"
 )
 
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places

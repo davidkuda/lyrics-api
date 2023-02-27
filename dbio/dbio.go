@@ -18,7 +18,7 @@ import (
 var ErrSongDoesNotExist = errors.New("Song does not exist")
 
 // returns a pool of connections to the postgres db according to the args
-func getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error) {
+func GetDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error) {
 	// "data source name": string of the url to the database
 	dsn := url.URL{
 		Scheme: "postgres",

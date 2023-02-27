@@ -40,7 +40,7 @@ func main() {
 		log.Fatal("Must specify db details as env var: DB_ADDR, DB_NAME, DB_USER and DB_PASSWORD")
 	}
 
-	db, err := getDatabaseConn(dbAddr, dbName, dbUser, dbPassword)
+	db, err := dbio.GetDatabaseConn(dbAddr, dbName, dbUser, dbPassword)
 	if err != nil {
 		log.Fatalf("getDatabaseConn(): %v", err)
 	}

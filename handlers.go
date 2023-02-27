@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/davidkuda/lyricsapi/config"
 )
 
 type application struct {
-	config  appConfig
-	handler func(w http.ResponseWriter, r *http.Request, config appConfig)
+	config  config.AppConfig
+	handler func(w http.ResponseWriter, r *http.Request, config config.AppConfig)
 
 	dbio DatabaseRepo
 
@@ -65,7 +67,7 @@ func (app *application) handleHealthCheck(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	app.config.logger.Println("Handling HealthCheck Request")
+	app.config.Logger.Println("Handling HealthCheck Request")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
@@ -102,16 +104,16 @@ func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request)
 	s := Song{}
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		app.config.logger.Println("io.ReadAll:", err)
+		app.config.Logger.Println("io.ReadAll:", err)
 	}
 	defer r.Body.Close()
 	if err := json.Unmarshal(data, &s); err != nil {
-		app.config.logger.Println("json.Unmarshal:", err)
+		app.config.Logger.Println("json.Unmarshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if err := CreateSong(&s, app.config); err != nil {
-		app.config.logger.Println("CreateSong:", err)
+		app.config.Logger.Println("CreateSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -124,19 +126,19 @@ func (app *application) handleDeleteSong(w http.ResponseWriter, r *http.Request)
 	data, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		app.config.logger.Println("io.ReadAll:", err)
+		app.config.Logger.Println("io.ReadAll:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.Unmarshal(data, &s); err != nil {
-		app.config.logger.Println("json.Unmarshal:", err)
+		app.config.Logger.Println("json.Unmarshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if err := DeleteSong(s.SongID, app.config); err != nil {
-		app.config.logger.Println("DeleteSong:", err)
+		app.config.Logger.Println("DeleteSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -222,7 +224,7 @@ func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 	app.writeJSON(w, http.StatusAccepted, tokens)
 }
 
-func listSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
+func listSongs(w http.ResponseWriter, r *http.Request, cfg config.AppConfig) {
 	songs := ListSongs(cfg)
 	// ? how to only send the fields Song.Artist and Song.SongName? i.e. omit SongText
 	body, err := json.Marshal(songs)
@@ -236,7 +238,7 @@ func listSongs(w http.ResponseWriter, r *http.Request, cfg appConfig) {
 	w.Write(body)
 }
 
-func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg appConfig) {
+func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg config.AppConfig) {
 	song, err := GetSong(id, cfg)
 
 	if err != nil {
@@ -247,7 +249,7 @@ func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg appConfig
 			resp["message"] = err.Error()
 			jsonResp, err := json.Marshal(resp)
 			if err != nil {
-				cfg.logger.Printf("Error happened in JSON marshal. Err: %s", err)
+				cfg.Logger.Printf("Error happened in JSON marshal. Err: %s", err)
 			}
 			w.Write(jsonResp)
 			return

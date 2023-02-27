@@ -10,6 +10,25 @@ import (
 	"time"
 )
 
+type application struct {
+	config  appConfig
+	handler func(w http.ResponseWriter, r *http.Request, config appConfig)
+
+	dbio DatabaseRepo
+
+	Domain string
+
+	auth         Auth
+	JWTSecret    string
+	JWTIssuer    string
+	JWTAudience  string
+	CookieDomain string
+}
+
+func (app application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	app.handler(w, r, app.config)
+}
+
 type DatabaseRepo interface {
 	Connection() *sql.DB
 	getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error)

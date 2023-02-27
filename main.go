@@ -8,23 +8,6 @@ import (
 	"time"
 )
 
-type application struct {
-	config  appConfig
-	handler func(w http.ResponseWriter, r *http.Request, config appConfig)
-
-	Domain string
-
-	auth         Auth
-	JWTSecret    string
-	JWTIssuer    string
-	JWTAudience  string
-	CookieDomain string
-}
-
-func (app application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	app.handler(w, r, app.config)
-}
-
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
 func main() {
 	var app application

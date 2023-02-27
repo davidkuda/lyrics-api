@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/davidkuda/lyricsapi/config"
+	"github.com/davidkuda/lyricsapi/dbio"
 )
 
 type application struct {
@@ -112,8 +113,8 @@ func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if err := CreateSong(&s, app.config); err != nil {
-		app.config.Logger.Println("CreateSong:", err)
+	if err := dbio.CreateSong(&s, app.config); err != nil {
+		app.config.Logger.Println("dbio.CreateSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -137,8 +138,8 @@ func (app *application) handleDeleteSong(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := DeleteSong(s.SongID, app.config); err != nil {
-		app.config.Logger.Println("DeleteSong:", err)
+	if err := dbio.DeleteSong(s.SongID, app.config); err != nil {
+		app.config.Logger.Println("dbio.DeleteSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -165,7 +166,7 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(data, &newUser)
 
 	// TODO: check if password is hashable, pw + salt should not exceed max length of bcrypt
-	if err := CreateNewUser(&newUser, app.config); err != nil {
+	if err := dbio.CreateNewUser(&newUser, app.config); err != nil {
 		status := http.StatusInternalServerError
 		log.Printf("%s %s: Error: %d %s", r.URL, r.Method, status, err)
 		http.Error(w, http.StatusText(status), status)
@@ -192,7 +193,7 @@ func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// validate user against database
-	user, err := GetUserByEmail(requestPayload.Email, app.config)
+	user, err := dbio.GetUserByEmail(requestPayload.Email, app.config)
 	if err != nil {
 		app.errorJSON(w, errors.New("GetUserByEmail: failed"), http.StatusBadRequest)
 		return
@@ -225,7 +226,7 @@ func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 }
 
 func listSongs(w http.ResponseWriter, r *http.Request, cfg config.AppConfig) {
-	songs := ListSongs(cfg)
+	songs := dbio.ListSongs(cfg)
 	// ? how to only send the fields Song.Artist and Song.SongName? i.e. omit SongText
 	body, err := json.Marshal(songs)
 	if err != nil {
@@ -239,10 +240,10 @@ func listSongs(w http.ResponseWriter, r *http.Request, cfg config.AppConfig) {
 }
 
 func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg config.AppConfig) {
-	song, err := GetSong(id, cfg)
+	song, err := dbio.GetSong(id, cfg)
 
 	if err != nil {
-		if err == ErrSongDoesNotExist {
+		if err == dbio.ErrSongDoesNotExist {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
 			resp := make(map[string]string)

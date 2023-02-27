@@ -49,7 +49,7 @@ type requestLog struct {
 	Protocol string `json:"protocol"`
 }
 
-func logRequest(r *http.Request, cfg *appConfig) {
+func logRequest(r *http.Request, cfg *config.AppConfig) {
 	l := requestLog{
 		URL:      r.URL.String(),
 		Method:   r.Method,
@@ -61,7 +61,7 @@ func logRequest(r *http.Request, cfg *appConfig) {
 	if err != nil {
 		panic(err)
 	}
-	cfg.logger.Println(string(j))
+	cfg.Logger.Println(string(j))
 }
 
 func (app *application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {

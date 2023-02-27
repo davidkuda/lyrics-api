@@ -11,6 +11,7 @@ import (
 
 	"github.com/davidkuda/lyricsapi/config"
 	"github.com/davidkuda/lyricsapi/dbio"
+	"github.com/davidkuda/lyricsapi/models"
 )
 
 type application struct {
@@ -35,9 +36,9 @@ func (app application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type DatabaseRepo interface {
 	Connection() *sql.DB
 	getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error)
-	ListSongs(cfg appConfig) Songs
-	GetSong(songName string, cfg appConfig) (Song, error)
-	GetUserByEmail(email string, cfg appConfig) (*User, error)
+	ListSongs(cfg config.AppConfig) models.Songs
+	GetSong(songName string, cfg config.AppConfig) (models.Song, error)
+	GetUserByEmail(email string, cfg config.AppConfig) (*models.User, error)
 }
 
 // ? how can you write logs to a file? can you write to stdout and to a file? (i.e. to multiple files?)
@@ -102,7 +103,7 @@ func (a *application) handleSongs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request) {
-	s := Song{}
+	s := models.Song{}
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		app.config.Logger.Println("io.ReadAll:", err)
@@ -123,7 +124,7 @@ func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *application) handleDeleteSong(w http.ResponseWriter, r *http.Request) {
-	s := Song{}
+	s := models.Song{}
 	data, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -161,7 +162,7 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := time.Now()
-	newUser := User{CreatedAt: t, UpdatedAt: t}
+	newUser := models.User{CreatedAt: t, UpdatedAt: t}
 	// unmarshal E-Mail and Password from payload of the request
 	json.Unmarshal(data, &newUser)
 

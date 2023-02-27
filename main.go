@@ -50,10 +50,10 @@ func main() {
 	}
 	log.Printf("Connection to database established: %s@%s", dbUser, dbName)
 
-	app.config = appConfig{
+	app.config = config.AppConfig{
 		// ? how to append log to a file or to a database? use a Tee on os level; Stdout and Stderr is the conventional choice.
-		logger: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
-		db:     db,
+		Logger: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
+		DB:     db,
 	}
 
 	mux := http.NewServeMux()

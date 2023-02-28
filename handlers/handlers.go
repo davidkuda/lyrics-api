@@ -3,12 +3,10 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"io"
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/davidkuda/lyricsapi/auth"
 	"github.com/davidkuda/lyricsapi/config"
@@ -153,86 +151,6 @@ func (app *Application) handleDeleteSong(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Write([]byte("Success: Deleted Song with ID " + s.SongID))
-}
-func (app *Application) signup(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &app.Config)
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	data, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
-
-	if err != nil {
-		status := http.StatusInternalServerError
-		log.Printf("%s %s: Error: %d %s", r.URL, r.Method, status, err)
-		http.Error(w, http.StatusText(status), status)
-	}
-
-	t := time.Now()
-	newUser := models.User{CreatedAt: t, UpdatedAt: t}
-	// unmarshal E-Mail and Password from payload of the request
-	json.Unmarshal(data, &newUser)
-
-	// TODO: check if password is hashable, pw + salt should not exceed max length of bcrypt
-	if err := dbio.CreateNewUser(&newUser, app.Config); err != nil {
-		status := http.StatusInternalServerError
-		log.Printf("%s %s: Error: %d %s", r.URL, r.Method, status, err)
-		http.Error(w, http.StatusText(status), status)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Success: User Created"))
-	return
-}
-
-func (app *Application) signin(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &app.Config)
-
-	// read json payload
-	var requestPayload struct {
-		Email    string `string:"email"`
-		Password string `json:"password"`
-	}
-
-	err := app.readJSON(w, r, &requestPayload)
-	if err != nil {
-		app.errorJSON(w, err, http.StatusBadRequest)
-	}
-
-	// validate user against database
-	user, err := dbio.GetUserByEmail(requestPayload.Email, app.Config)
-	if err != nil {
-		app.errorJSON(w, errors.New("GetUserByEmail: failed"), http.StatusBadRequest)
-		return
-	}
-
-	// check password in db
-	valid, err := user.PasswordMatches(requestPayload.Password)
-	if err != nil || !valid {
-		app.errorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
-		return
-	}
-
-	// create a jwt user
-	u := auth.JWTUser{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-	}
-
-	tokens, err := app.Auth.GenerateTokenPair(&u)
-	if err != nil {
-		// return json error
-		return
-	}
-
-	refreshCookie := app.Auth.GetRefreshCookie(tokens.RefreshToken)
-	http.SetCookie(w, refreshCookie)
-
-	app.writeJSON(w, http.StatusAccepted, tokens)
 }
 
 func listSongs(w http.ResponseWriter, r *http.Request, cfg config.AppConfig) {

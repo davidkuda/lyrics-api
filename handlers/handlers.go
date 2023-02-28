@@ -24,7 +24,7 @@ type Application struct {
 
 	Domain string
 
-	auth         authnz.Auth
+	Auth         authnz.Auth
 	JWTSecret    string
 	JWTIssuer    string
 	JWTAudience  string
@@ -88,7 +88,7 @@ func (a *Application) handleSongs(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else if r.Method == http.MethodPost {
-		_, _, err := a.auth.GetTokenFromHeaderAndVerify(w, r)
+		_, _, err := a.Auth.GetTokenFromHeaderAndVerify(w, r)
 		if err != nil {
 			// log error: do not return to the Client, but log internally for debugging.
 			w.WriteHeader(http.StatusUnauthorized)
@@ -97,7 +97,7 @@ func (a *Application) handleSongs(w http.ResponseWriter, r *http.Request) {
 		a.handleCreateSong(w, r)
 
 	} else if r.Method == http.MethodDelete {
-		if _, _, err := a.auth.GetTokenFromHeaderAndVerify(w, r); err != nil {
+		if _, _, err := a.Auth.GetTokenFromHeaderAndVerify(w, r); err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -223,13 +223,13 @@ func (app *Application) signin(w http.ResponseWriter, r *http.Request) {
 		LastName:  user.LastName,
 	}
 
-	tokens, err := app.auth.GenerateTokenPair(&u)
+	tokens, err := app.Auth.GenerateTokenPair(&u)
 	if err != nil {
 		// return json error
 		return
 	}
 
-	refreshCookie := app.auth.GetRefreshCookie(tokens.RefreshToken)
+	refreshCookie := app.Auth.GetRefreshCookie(tokens.RefreshToken)
 	http.SetCookie(w, refreshCookie)
 
 	app.writeJSON(w, http.StatusAccepted, tokens)

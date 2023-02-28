@@ -6,26 +6,28 @@ import (
 	"os"
 	"time"
 
+	"github.com/davidkuda/lyricsapi/auth"
 	"github.com/davidkuda/lyricsapi/config"
 	"github.com/davidkuda/lyricsapi/dbio"
+	"github.com/davidkuda/lyricsapi/handlers"
 )
 
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
 func main() {
-	var app application
+	var app handlers.Application
 
 	app.JWTSecret = os.Getenv("JWT_SECRET")
 	app.JWTIssuer = os.Getenv("JWT_ISSUER")
 	app.JWTAudience = os.Getenv("JWT_AUDIENCE")
 	app.CookieDomain = os.Getenv("COOKIE_DOMAIN")
 
-	app.auth = Auth{
+	app.Auth = auth.Auth{
 		Issuer:        app.JWTIssuer,
 		Audience:      app.JWTAudience,
 		Secret:        app.JWTSecret,
 		TokenExpiry:   time.Minute * 15,
 		RefreshExpiry: time.Hour * 24,
-		Cookie: Cookie{
+		Cookie: auth.Cookie{
 			Path:   "/",
 			Name:   "__Host-refresh_token",
 			Domain: app.CookieDomain,

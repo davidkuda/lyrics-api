@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davidkuda/lyricsapi/authnz"
+	"github.com/davidkuda/lyricsapi/auth"
 	"github.com/davidkuda/lyricsapi/config"
 	"github.com/davidkuda/lyricsapi/dbio"
 	"github.com/davidkuda/lyricsapi/models"
@@ -24,7 +24,7 @@ type Application struct {
 
 	Domain string
 
-	Auth         authnz.Auth
+	Auth         auth.Auth
 	JWTSecret    string
 	JWTIssuer    string
 	JWTAudience  string
@@ -217,7 +217,7 @@ func (app *Application) signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create a jwt user
-	u := authnz.JWTUser{
+	u := auth.JWTUser{
 		ID:        user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,

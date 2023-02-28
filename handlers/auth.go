@@ -13,7 +13,7 @@ import (
 	"github.com/davidkuda/lyricsapi/models"
 )
 
-func (app *Application) signup(w http.ResponseWriter, r *http.Request) {
+func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {
 	logRequest(r, &app.Config)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -47,7 +47,7 @@ func (app *Application) signup(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (app *Application) signin(w http.ResponseWriter, r *http.Request) {
+func (app *Application) Signin(w http.ResponseWriter, r *http.Request) {
 	logRequest(r, &app.Config)
 
 	// read json payload

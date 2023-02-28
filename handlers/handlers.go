@@ -65,7 +65,7 @@ func logRequest(r *http.Request, cfg *config.AppConfig) {
 	cfg.Logger.Println(string(j))
 }
 
-func (app *Application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+func (app *Application) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -75,7 +75,7 @@ func (app *Application) handleHealthCheck(w http.ResponseWriter, r *http.Request
 	w.Write([]byte("ok"))
 }
 
-func (a *Application) handleSongs(w http.ResponseWriter, r *http.Request) {
+func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
 	logRequest(r, &a.Config)
 	if r.Method == http.MethodGet {
 		if len(r.URL.Path) > len("/songs/") {

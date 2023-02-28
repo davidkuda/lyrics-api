@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"io"
 	"log"
@@ -34,11 +33,10 @@ func (app Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type DatabaseRepo interface {
-	Connection() *sql.DB
-	getDatabaseConn(dbAddr, dbName, dbUser, dbPassword string) (*sql.DB, error)
 	ListSongs(cfg config.AppConfig) models.Songs
 	GetSong(songName string, cfg config.AppConfig) (models.Song, error)
-	GetUserByEmail(email string, cfg config.AppConfig) (*models.User, error)
+	CreateSong(songID string)
+	DeleteSong()
 }
 
 func (app *Application) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {

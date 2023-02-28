@@ -10,28 +10,29 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davidkuda/lyricsapi/authnz"
 	"github.com/davidkuda/lyricsapi/config"
 	"github.com/davidkuda/lyricsapi/dbio"
 	"github.com/davidkuda/lyricsapi/models"
 )
 
-type application struct {
-	config  config.AppConfig
-	handler func(w http.ResponseWriter, r *http.Request, config config.AppConfig)
+type Application struct {
+	Config  config.AppConfig
+	Handler func(w http.ResponseWriter, r *http.Request, config config.AppConfig)
 
 	dbio DatabaseRepo
 
 	Domain string
 
-	auth         Auth
+	auth         authnz.Auth
 	JWTSecret    string
 	JWTIssuer    string
 	JWTAudience  string
 	CookieDomain string
 }
 
-func (app application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	app.handler(w, r, app.config)
+func (app Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	app.Handler(w, r, app.Config)
 }
 
 type DatabaseRepo interface {
@@ -42,6 +43,7 @@ type DatabaseRepo interface {
 	GetUserByEmail(email string, cfg config.AppConfig) (*models.User, error)
 }
 
+// todo: log via middleware, not inside handlers
 // ? how can you write logs to a file? can you write to stdout and to a file? (i.e. to multiple files?)
 type requestLog struct {
 	URL      string `json:"url"`
@@ -65,58 +67,62 @@ func logRequest(r *http.Request, cfg *config.AppConfig) {
 	cfg.Logger.Println(string(j))
 }
 
-func (app *application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+func (app *Application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	app.config.Logger.Println("Handling HealthCheck Request")
+	app.Config.Logger.Println("Handling HealthCheck Request")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
 
-func (a *application) handleSongs(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &a.config)
+func (a *Application) handleSongs(w http.ResponseWriter, r *http.Request) {
+	logRequest(r, &a.Config)
 	if r.Method == http.MethodGet {
 		if len(r.URL.Path) > len("/songs/") {
 			id := strings.TrimPrefix(r.URL.Path, "/songs/")
-			returnSong(w, r, id, a.config)
+			returnSong(w, r, id, a.Config)
 		} else {
-			listSongs(w, r, a.config)
+			listSongs(w, r, a.Config)
 		}
+
 	} else if r.Method == http.MethodPost {
 		_, _, err := a.auth.GetTokenFromHeaderAndVerify(w, r)
 		if err != nil {
+			// log error: do not return to the Client, but log internally for debugging.
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		a.handleCreateSong(w, r)
-		// write new song to db
+
 	} else if r.Method == http.MethodDelete {
-		_, _, err := a.auth.GetTokenFromHeaderAndVerify(w, r)
-		if err != nil {
+		if _, _, err := a.auth.GetTokenFromHeaderAndVerify(w, r); err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		a.handleDeleteSong(w, r)
+
 	} else {
-		listSongs(w, r, a.config)
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 }
 
-func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request) {
+func (app *Application) handleCreateSong(w http.ResponseWriter, r *http.Request) {
 	s := models.Song{}
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		app.config.Logger.Println("io.ReadAll:", err)
+		app.Config.Logger.Println("io.ReadAll:", err)
 	}
 	defer r.Body.Close()
 	if err := json.Unmarshal(data, &s); err != nil {
-		app.config.Logger.Println("json.Unmarshal:", err)
+		app.Config.Logger.Println("json.Unmarshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if err := dbio.CreateSong(&s, app.config); err != nil {
-		app.config.Logger.Println("dbio.CreateSong:", err)
+	if err := dbio.CreateSong(&s, app.Config); err != nil {
+		app.Config.Logger.Println("dbio.CreateSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -124,38 +130,40 @@ func (app *application) handleCreateSong(w http.ResponseWriter, r *http.Request)
 	w.Write([]byte("Success: Created New Song"))
 }
 
-func (app *application) handleDeleteSong(w http.ResponseWriter, r *http.Request) {
+func (app *Application) handleDeleteSong(w http.ResponseWriter, r *http.Request) {
 	s := models.Song{}
 	data, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		app.config.Logger.Println("io.ReadAll:", err)
+		app.Config.Logger.Println("io.ReadAll:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.Unmarshal(data, &s); err != nil {
-		app.config.Logger.Println("json.Unmarshal:", err)
+		app.Config.Logger.Println("json.Unmarshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if err := dbio.DeleteSong(s.SongID, app.config); err != nil {
-		app.config.Logger.Println("dbio.DeleteSong:", err)
+	if err := dbio.DeleteSong(s.SongID, app.Config); err != nil {
+		app.Config.Logger.Println("dbio.DeleteSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.Write([]byte("Success: Deleted Song with ID " + s.SongID))
 }
-func (app *application) signup(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &app.config)
+func (app *Application) signup(w http.ResponseWriter, r *http.Request) {
+	logRequest(r, &app.Config)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	data, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
 	if err != nil {
 		status := http.StatusInternalServerError
 		log.Printf("%s %s: Error: %d %s", r.URL, r.Method, status, err)
@@ -168,7 +176,7 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(data, &newUser)
 
 	// TODO: check if password is hashable, pw + salt should not exceed max length of bcrypt
-	if err := dbio.CreateNewUser(&newUser, app.config); err != nil {
+	if err := dbio.CreateNewUser(&newUser, app.Config); err != nil {
 		status := http.StatusInternalServerError
 		log.Printf("%s %s: Error: %d %s", r.URL, r.Method, status, err)
 		http.Error(w, http.StatusText(status), status)
@@ -180,8 +188,8 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (app *application) signin(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &app.config)
+func (app *Application) signin(w http.ResponseWriter, r *http.Request) {
+	logRequest(r, &app.Config)
 
 	// read json payload
 	var requestPayload struct {
@@ -195,7 +203,7 @@ func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// validate user against database
-	user, err := dbio.GetUserByEmail(requestPayload.Email, app.config)
+	user, err := dbio.GetUserByEmail(requestPayload.Email, app.Config)
 	if err != nil {
 		app.errorJSON(w, errors.New("GetUserByEmail: failed"), http.StatusBadRequest)
 		return
@@ -209,7 +217,7 @@ func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create a jwt user
-	u := JWTUser{
+	u := authnz.JWTUser{
 		ID:        user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,

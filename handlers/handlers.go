@@ -41,30 +41,6 @@ type DatabaseRepo interface {
 	GetUserByEmail(email string, cfg config.AppConfig) (*models.User, error)
 }
 
-// todo: log via middleware, not inside handlers
-// ? how can you write logs to a file? can you write to stdout and to a file? (i.e. to multiple files?)
-type requestLog struct {
-	URL      string `json:"url"`
-	Method   string `json:"method"`
-	BodySize int64  `json:"content_length"`
-	Protocol string `json:"protocol"`
-}
-
-func logRequest(r *http.Request, cfg *config.AppConfig) {
-	l := requestLog{
-		URL:      r.URL.String(),
-		Method:   r.Method,
-		BodySize: r.ContentLength,
-		Protocol: r.Proto,
-	}
-
-	j, err := json.Marshal(&l)
-	if err != nil {
-		panic(err)
-	}
-	cfg.Logger.Println(string(j))
-}
-
 func (app *Application) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

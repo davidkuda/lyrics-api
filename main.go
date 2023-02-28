@@ -54,7 +54,7 @@ func main() {
 	}
 	log.Printf("Connection to database established: %s@%s", dbUser, dbName)
 
-	app.config = config.AppConfig{
+	app.Config = config.AppConfig{
 		// ? how to append log to a file or to a database? use a Tee on os level; Stdout and Stderr is the conventional choice.
 		Logger: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
 		DB:     db,

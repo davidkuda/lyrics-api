@@ -18,10 +18,10 @@ type Songs []Song
 // Copyright: copyright information of the song
 // Covers: list of URLs to great covers, e.g. on YouTube
 type Song struct {
-	SongID    string   `json:"song_id"`
+	SongID    string   `json:"id"`
 	Artist    string   `json:"artist"`
-	SongName  string   `json:"song_name"`
-	SongText  string   `json:"song_text,omitempty"`
+	SongName  string   `json:"name"`
+	SongText  string   `json:"lyrics,omitempty"`
 	Chords    string   `json:"chords,omitempty"`
 	Copyright string   `json:"copyright,omitempty"`
 	Covers    []string `json:"covers,omitempty"`

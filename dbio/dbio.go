@@ -56,7 +56,7 @@ func ListSongs(cfg config.AppConfig) models.Songs {
 	return songs
 }
 
-func GetSong(songName string, cfg config.AppConfig) (models.Song, error) {
+func GetSong(songID string, cfg config.AppConfig) (models.Song, error) {
 	ctx := context.Background()
 	conn, err := cfg.DB.Conn(ctx)
 	if err != nil {
@@ -77,7 +77,7 @@ func GetSong(songName string, cfg config.AppConfig) (models.Song, error) {
 		FROM songs
 		WHERE song_name = $1`
 
-	row := conn.QueryRowContext(context.Background(), query, songName)
+	row := conn.QueryRowContext(context.Background(), query, songID)
 
 	if row.Err(); err != nil {
 		cfg.Logger.Println("conn.QueryRow", err)

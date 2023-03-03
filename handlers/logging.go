@@ -2,13 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-
-	"github.com/davidkuda/lyricsapi/config"
 )
 
-// todo: log via middleware, not inside handlers
-// ? how can you write logs to a file? can you write to stdout and to a file? (i.e. to multiple files?)
 type requestLog struct {
 	URL      string `json:"url"`
 	Method   string `json:"method"`
@@ -16,7 +13,14 @@ type requestLog struct {
 	Protocol string `json:"protocol"`
 }
 
-func logRequest(r *http.Request, cfg *config.AppConfig) {
+func (a *Application) LogRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logRequest(r, a.Config.Logger)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func logRequest(r *http.Request, logger *log.Logger) {
 	l := requestLog{
 		URL:      r.URL.String(),
 		Method:   r.Method,
@@ -28,6 +32,7 @@ func logRequest(r *http.Request, cfg *config.AppConfig) {
 	if err != nil {
 		panic(err)
 	}
-	cfg.Logger.Println(string(j))
+
+	logger.Println(string(j))
 }
 

@@ -50,7 +50,6 @@ func (app *Application) HandleHealthCheck(w http.ResponseWriter, r *http.Request
 }
 
 func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &a.Config)
 	if r.Method == http.MethodGet {
 		if len(r.URL.Path) > len("/songs/") {
 			id := strings.TrimPrefix(r.URL.Path, "/songs/")

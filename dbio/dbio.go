@@ -75,7 +75,7 @@ func GetSong(songID string, cfg config.AppConfig) (models.Song, error) {
 			chords,
 			copyright
 		FROM songs
-		WHERE song_name = $1`
+		WHERE song_id = $1`
 
 	row := conn.QueryRowContext(context.Background(), query, songID)
 

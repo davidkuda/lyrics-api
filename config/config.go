@@ -8,4 +8,7 @@ import (
 type AppConfig struct {
 	Logger *log.Logger
 	DB     *sql.DB
+	CORS   struct {
+		TrustedOrigins []string
+	}
 }

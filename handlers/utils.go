@@ -17,10 +17,11 @@ type JSONResponse struct {
 func (app *Application) writeJSON(
 	w http.ResponseWriter, status int, data interface{}, headers ...http.Header,
 ) error {
-	out, err := json.Marshal(data)
+	out, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return nil
 	}
+
 	if len(headers) > 0 {
 		for _, header := range headers {
 			for key, value := range header {
@@ -31,9 +32,7 @@ func (app *Application) writeJSON(
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if _, err := w.Write(out); err != nil {
-		return err
-	}
+	w.Write(out)
 
 	return nil
 }

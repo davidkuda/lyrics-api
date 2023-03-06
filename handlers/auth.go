@@ -14,7 +14,6 @@ import (
 )
 
 func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &app.Config)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -48,7 +47,12 @@ func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) Signin(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, &app.Config)
+	// origin := "http://localhost:3001"
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// if r.Method == "OPTIONS" {
+	// 	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	// 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, X-CSRF-Token, Authorization")
+	// }
 
 	// read json payload
 	var requestPayload struct {
@@ -87,6 +91,15 @@ func (app *Application) Signin(w http.ResponseWriter, r *http.Request) {
 		// return json error
 		return
 	}
+
+	c := http.Cookie{
+		Name:     "jwt",
+		Value:    tokens.Token,
+		MaxAge:   15 * 60,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &c)
 
 	refreshCookie := app.Auth.GetRefreshCookie(tokens.RefreshToken)
 	http.SetCookie(w, refreshCookie)

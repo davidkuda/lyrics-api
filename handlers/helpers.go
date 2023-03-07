@@ -69,7 +69,6 @@ func (app *Application) errorJSON(w http.ResponseWriter, err error, status ...in
 	payload.Message = err.Error()
 
 	env := envelope{"error": payload}
-	h := http.Header{}
 
-	return app.writeJSON(w, statusCode, env, h)
+	return app.writeJSON(w, statusCode, env, nil)
 }

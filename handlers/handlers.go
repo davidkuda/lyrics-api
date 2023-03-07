@@ -39,16 +39,6 @@ type DatabaseRepo interface {
 	DeleteSong()
 }
 
-func (app *Application) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	app.Config.Logger.Println("Handling HealthCheck Request")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("ok"))
-}
-
 func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		if len(r.URL.Path) > len("/songs/") {

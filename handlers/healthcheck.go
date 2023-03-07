@@ -15,4 +15,17 @@ func (app *Application) HandleHealthCheck(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 
 	w.Write([]byte(js))
+	env := envelope{
+		"status": "available",
+		"system_information": map[string]string{
+			"environment": "development",
+			"version":     "0.0.1",
+		},
+	}
+
+	err := app.writeJSON(w, http.StatusOK, env, nil)
+	if err != nil {
+		app.Config.Logger.Print(err)
+		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+	}
 }

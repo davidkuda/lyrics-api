@@ -104,5 +104,5 @@ func (app *Application) Signin(w http.ResponseWriter, r *http.Request) {
 	refreshCookie := app.Auth.GetRefreshCookie(tokens.RefreshToken)
 	http.SetCookie(w, refreshCookie)
 
-	app.writeJSON(w, http.StatusAccepted, tokens)
+	app.writeJSON(w, http.StatusAccepted, envelope{"tokens": tokens}, nil)
 }

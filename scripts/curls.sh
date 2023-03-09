@@ -12,6 +12,12 @@ curl \
   --header "Content-Type: application/json" \
   --data '{"email":"dku@dku","password":"berlin"}' \ # infer Post
   "http://localhost:8032/signin"
+curl \
+  --silent \
+  -include \
+  --header "Content-Type: application/json" \
+  --data '{"email":"dku@dku","password":"berlin"}' \
+  "http://localhost:8032/signin"
 
 # parse headers
 function ph {
@@ -25,3 +31,8 @@ function ph {
   | sed "s/^Set-Cookie: //" \
   | sed "s/; /\n/g"
 }
+
+# get token
+BODY='{"email": "dku@dku", "password": "berlin"}'
+curl -i -d "$BODY" localhost:8032/v1/tokens/authentication
+

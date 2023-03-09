@@ -13,18 +13,18 @@ const (
 )
 
 type Token struct {
-    Plaintext string    `json:"token"`
-    Hash      []byte    `json:"-"`
-    UserID    int64     `json:"-"`
-    Expiry    time.Time `json:"expiry"`
-    Scope     string    `json:"-"`
+	Plaintext string    `json:"token"`
+	Hash      []byte    `json:"-"`
+	UserEMail string    `json:"-"`
+	Expiry    time.Time `json:"expiry"`
+	Scope     string    `json:"-"`
 }
 
-func GenerateToken(userID int64, ttl time.Duration, scope string) (*Token, error) {
+func GenerateToken(userEMail string, ttl time.Duration, scope string) (*Token, error) {
 	token := &Token{
-		UserID: userID,
-		Expiry: time.Now().Add(ttl),
-		Scope:  scope,
+		UserEMail: userEMail,
+		Expiry:    time.Now().Add(ttl),
+		Scope:     scope,
 	}
 
 	randomBytes := make([]byte, 16)

@@ -11,4 +11,5 @@ func setupHandlers(mux *http.ServeMux, app handlers.Application) {
 	mux.HandleFunc("/healthz", app.HandleHealthCheck)
 	mux.HandleFunc("/signup", app.Signup)
 	mux.HandleFunc("/signin", app.Signin)
+	mux.HandleFunc("/v1/tokens/authentication", app.CreateAuthenticationTokenHandler)
 }

@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/davidkuda/lyricsapi/config"
+	"github.com/davidkuda/lyricsapi/internal/data"
 	"github.com/davidkuda/lyricsapi/models"
 )
 
@@ -230,4 +232,32 @@ func CreateNewUser(u *models.User, cfg config.AppConfig) error {
 	}
 
 	return nil
+}
+
+// Insert() adds the data for a specific token to the tokens table.
+func Insert(token *data.Token, cfg config.AppConfig) error {
+	query := `
+        INSERT INTO tokens (hash, user_id, expiry, scope) 
+        VALUES ($1, $2, $3, $4)`
+
+	args := []any{token.Hash, token.UserID, token.Expiry, token.Scope}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := cfg.DB.ExecContext(ctx, query, args...)
+	return err
+}
+
+// DeleteAllForUser() deletes all tokens for a specific user and scope.
+func DeleteAllTokensForUser(scope string, userEmail string, cfg config.AppConfig) error {
+	query := `
+        DELETE FROM tokens 
+        WHERE scope = $1 AND email = $2`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := cfg.DB.ExecContext(ctx, query, scope, userEmail)
+	return err
 }

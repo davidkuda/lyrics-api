@@ -8,7 +8,7 @@ import (
 	"github.com/davidkuda/lyricsapi/internal/data"
 )
 
-func (app *Application) createAuthenticationTokenHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) CreateAuthenticationTokenHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the email and password from the request body.
 	var input struct {
 		Email    string `json:"email"`

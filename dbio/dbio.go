@@ -240,7 +240,7 @@ func Insert(token *data.Token, cfg config.AppConfig) error {
         INSERT INTO tokens (hash, user_id, expiry, scope) 
         VALUES ($1, $2, $3, $4)`
 
-	args := []any{token.Hash, token.UserID, token.Expiry, token.Scope}
+	args := []any{token.Hash, token.UserEMail, token.Expiry, token.Scope}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

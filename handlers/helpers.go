@@ -31,7 +31,6 @@ func (app *Application) writeJSON(
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
 	w.Write(js)
 
 	return nil

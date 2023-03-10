@@ -42,9 +42,13 @@ func (app *Application) invalidCredentialsResponse(w http.ResponseWriter, r *htt
 
 // used in middleware Authenticate
 func (app *Application) invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("WWW-Authenticate", "Bearer")
+	w.Header().Set("WWW-Authenticate", "Bearer")
 
-    message := "invalid or missing authentication token"
-    app.errorResponse(w, r, http.StatusUnauthorized, message)
+	message := "invalid or missing authentication token"
+	app.errorResponse(w, r, http.StatusUnauthorized, message)
 }
 
+func (app *Application) authenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
+	message := "you must be authenticated to access this resource"
+	app.errorResponse(w, r, http.StatusUnauthorized, message)
+}

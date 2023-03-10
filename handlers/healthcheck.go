@@ -10,11 +10,8 @@ func (app *Application) HandleHealthCheck(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	js := `{"status": "available", "environment": "development", "version": "1.0.0"}`
-
 	w.Header().Set("Content-Type", "application/json")
 
-	w.Write([]byte(js))
 	env := envelope{
 		"status": "available",
 		"system_information": map[string]string{

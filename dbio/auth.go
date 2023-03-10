@@ -2,6 +2,8 @@ package dbio
 
 import (
 	"context"
+	"crypto/sha256"
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -14,7 +16,6 @@ import (
 	"github.com/davidkuda/lyricsapi/internal/data"
 	"github.com/davidkuda/lyricsapi/models"
 )
-
 
 func GetUserByEmail(email string, cfg config.AppConfig) (*models.User, error) {
 	ctx := context.Background()
@@ -118,4 +119,50 @@ func DeleteAllTokensForUser(scope string, userEmail string, cfg config.AppConfig
 
 	_, err := cfg.DB.ExecContext(ctx, query, scope, userEmail)
 	return err
+}
+
+// retrieve the details of the user associated with a particular activation token
+func GetForToken(tokenScope, tokenPlaintext string, cfg config.AppConfig) (*models.User, error) {
+	// Calculate the SHA-256 hash of the plaintext token provided by the client.
+	// Remember that this returns a byte *array* with length 32, not a slice.
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+
+	query := `
+        SELECT users.email, users.created_at, users.password_hash
+        FROM users
+        INNER JOIN tokens
+        ON users.email = tokens.email
+        WHERE tokens.hash = $1
+        AND tokens.scope = $2 
+        AND tokens.expiry > $3`
+
+	// Create a slice containing the query arguments. Notice how we use the [:] operator
+	// to get a slice containing the token hash, rather than passing in the array (which
+	// is not supported by the pq driver), and that we pass the current time as the
+	// value to check against the token expiry.
+	args := []any{tokenHash[:], tokenScope, time.Now()}
+
+	var user models.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	// Execute the query, scanning the return values into a User struct. If no matching
+	// record is found we return an ErrRecordNotFound error.
+	err := cfg.DB.QueryRowContext(ctx, query, args...).Scan(
+		&user.EMail,
+		&user.CreatedAt,
+		&user.Password,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, errors.New("ErrRecordNotFound")
+		default:
+			return nil, err
+		}
+	}
+
+	// Return the matching user.
+	return &user, nil
 }

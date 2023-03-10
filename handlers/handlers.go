@@ -17,8 +17,6 @@ type Application struct {
 	Config  config.AppConfig
 	Handler func(w http.ResponseWriter, r *http.Request, config config.AppConfig)
 
-	dbio DatabaseRepo
-
 	Domain string
 
 	Auth         auth.Auth
@@ -30,13 +28,6 @@ type Application struct {
 
 func (app Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	app.Handler(w, r, app.Config)
-}
-
-type DatabaseRepo interface {
-	ListSongs(cfg config.AppConfig) models.Songs
-	GetSong(songName string, cfg config.AppConfig) (models.Song, error)
-	CreateSong(songID string)
-	DeleteSong()
 }
 
 func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {

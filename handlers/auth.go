@@ -42,3 +42,4 @@ func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Success: User Created"))
 }
+

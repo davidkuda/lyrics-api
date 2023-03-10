@@ -40,17 +40,19 @@ func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else if r.Method == http.MethodPost {
-		_, _, err := a.Auth.GetTokenFromHeaderAndVerify(w, r)
-		if err != nil {
-			// log error: do not return to the Client, but log internally for debugging.
-			w.WriteHeader(http.StatusUnauthorized)
+		// check if user is authenticated
+		user := a.contextGetUser(r)
+		if user.IsAnonymous() {
+			a.authenticationRequiredResponse(w, r)
 			return
 		}
 		a.handleCreateSong(w, r)
 
 	} else if r.Method == http.MethodDelete {
-		if _, _, err := a.Auth.GetTokenFromHeaderAndVerify(w, r); err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
+		// check if user is authenticated
+		user := a.contextGetUser(r)
+		if user.IsAnonymous() {
+			a.authenticationRequiredResponse(w, r)
 			return
 		}
 		a.handleDeleteSong(w, r)

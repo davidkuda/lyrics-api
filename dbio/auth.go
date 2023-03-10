@@ -128,7 +128,7 @@ func GetForToken(tokenScope, tokenPlaintext string, cfg config.AppConfig) (*mode
 	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
 
 	query := `
-        SELECT users.email, users.created_at, users.password_hash
+        SELECT users.email, users.created_at, users.password
         FROM users
         INNER JOIN tokens
         ON users.email = tokens.email

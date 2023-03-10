@@ -92,8 +92,8 @@ func CreateNewUser(u *models.User, cfg config.AppConfig) error {
 	return nil
 }
 
-// Insert() adds the data for a specific token to the tokens table.
-func Insert(token *data.Token, cfg config.AppConfig) error {
+// InsertToken() adds the data for a specific token to the tokens table.
+func InsertToken(token *data.Token, cfg config.AppConfig) error {
 	query := `
         INSERT INTO tokens (hash, email, expiry, scope) 
         VALUES ($1, $2, $3, $4)`

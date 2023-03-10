@@ -50,7 +50,7 @@ func (app *Application) CreateAuthenticationTokenHandler(w http.ResponseWriter, 
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	dbio.Insert(token, app.Config)
+	dbio.InsertToken(token, app.Config)
 
 	// Encode the token to JSON and send it in the response along with a 201 Created
 	// status code.

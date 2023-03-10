@@ -37,6 +37,13 @@ type User struct {
 	UpdatedAt time.Time `json:"-"`
 }
 
+var AnonymousUser = &User{}
+
+// Check if a User instance is the AnonymousUser.
+func (u *User) IsAnonymous() bool {
+    return u == AnonymousUser
+}
+
 func (u *User) PasswordMatches(plainText string) (bool, error) {
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plainText)); err != nil {
 		switch {

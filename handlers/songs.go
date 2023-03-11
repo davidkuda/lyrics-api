@@ -12,14 +12,10 @@ import (
 	"github.com/davidkuda/lyricsapi/models"
 )
 
-func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
+// /songs
+func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		if len(r.URL.Path) > len("/songs/") {
-			id := strings.TrimPrefix(r.URL.Path, "/songs/")
-			returnSong(w, r, id, a.Config)
-		} else {
-			listSongs(w, r, a.Config)
-		}
+		listSongs(w, r, a.Config)
 
 	} else if r.Method == http.MethodPost {
 		// check if user is authenticated
@@ -28,7 +24,20 @@ func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
 			a.authenticationRequiredResponse(w, r)
 			return
 		}
-		a.handleCreateSong(w, r)
+		a.createSong(w, r)
+
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+}
+
+// /songs/:id
+func (a *Application) HandleSongsSubtreePath(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/songs/")
+
+	if r.Method == http.MethodGet {
+		returnSong(w, r, id, a.Config)
 
 	} else if r.Method == http.MethodDelete {
 		// check if user is authenticated
@@ -37,7 +46,7 @@ func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
 			a.authenticationRequiredResponse(w, r)
 			return
 		}
-		a.handleDeleteSong(w, r)
+		a.handleDeleteSong(w, id)
 
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -45,7 +54,7 @@ func (a *Application) HandleSongs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *Application) handleCreateSong(w http.ResponseWriter, r *http.Request) {
+func (app *Application) createSong(w http.ResponseWriter, r *http.Request) {
 	s := models.Song{}
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -66,29 +75,13 @@ func (app *Application) handleCreateSong(w http.ResponseWriter, r *http.Request)
 	w.Write([]byte("Success: Created New Song"))
 }
 
-func (app *Application) handleDeleteSong(w http.ResponseWriter, r *http.Request) {
-	s := models.Song{}
-	data, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		app.Config.Logger.Println("io.ReadAll:", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if err := json.Unmarshal(data, &s); err != nil {
-		app.Config.Logger.Println("json.Unmarshal:", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if err := dbio.DeleteSong(s.SongID, app.Config); err != nil {
+func (app *Application) handleDeleteSong(w http.ResponseWriter, songID string) {
+	if err := dbio.DeleteSong(songID, app.Config); err != nil {
 		app.Config.Logger.Println("dbio.DeleteSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	w.Write([]byte("Success: Deleted Song with ID " + s.SongID))
+	w.Write([]byte("Success: Deleted Song with ID " + songID))
 }
 
 func listSongs(w http.ResponseWriter, r *http.Request, cfg config.AppConfig) {

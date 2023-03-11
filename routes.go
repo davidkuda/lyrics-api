@@ -12,6 +12,7 @@ import (
 // slash.
 
 func setupHandlers(mux *http.ServeMux, app handlers.Application) {
+	mux.HandleFunc("/healthz", app.HandleHealthCheck)
 	mux.HandleFunc("/songs", app.HandleSongsFixedPath)
 	mux.HandleFunc("/songs/", app.HandleSongsSubtreePath)
 	// mux.HandleFunc("/signup", app.Signup)

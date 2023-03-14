@@ -26,6 +26,16 @@ func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Reques
 		}
 		a.createSong(w, r)
 
+	} else if r.Method == http.MethodOptions {
+		// CORS preflight request
+		user := a.contextGetUser(r)
+		if user.IsAnonymous() {
+			a.authenticationRequiredResponse(w, r)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return

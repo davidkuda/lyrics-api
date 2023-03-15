@@ -60,7 +60,6 @@ func (app *Application) EnableCORS(next http.Handler) http.Handler {
 		if origin != "" {
 			for i := range app.Config.CORS.TrustedOrigins {
 				if origin == app.Config.CORS.TrustedOrigins[i] {
-					fmt.Println(origin)
 					w.Header().Set("Access-Control-Allow-Origin", origin)
 					w.Header().Set("Access-Control-Allow-Credentials", "true")
 					w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")

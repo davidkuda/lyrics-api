@@ -95,10 +95,10 @@ func CreateSong(s *models.Song, cfg config.AppConfig) error {
 
 	query := `
 		INSERT INTO songs (
-			song_id,
+			id,
 			artist,
-			song_name,
-			song_text,
+			name,
+			text,
 			chords,
 			copyright
 		) VALUES ($1, $2, $3, $4, $5, $6);`

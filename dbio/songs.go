@@ -2,21 +2,22 @@ package dbio
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/davidkuda/lyricsapi/config"
 	"github.com/davidkuda/lyricsapi/models"
 )
 
 var ErrSongDoesNotExist = errors.New("Song does not exist")
 
-func ListSongs(cfg config.AppConfig) models.Songs {
+func ListSongs(db sql.DB) models.Songs {
 	ctx := context.Background()
-	conn, err := cfg.DB.Conn(ctx)
+	conn, err := db.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
@@ -31,7 +32,6 @@ func ListSongs(cfg config.AppConfig) models.Songs {
 	}
 
 	var songs models.Songs
-	var artist, song, song_id string
 	for rows.Next() {
 		song := models.Song{}
 		rows.Scan(&song.Artist, &song.Name, &song.ID)
@@ -41,9 +41,9 @@ func ListSongs(cfg config.AppConfig) models.Songs {
 	return songs
 }
 
-func GetSong(songID string, cfg config.AppConfig) (models.Song, error) {
+func GetSong(songID string, db sql.DB, l log.Logger) (models.Song, error) {
 	ctx := context.Background()
-	conn, err := cfg.DB.Conn(ctx)
+	conn, err := db.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}
@@ -65,7 +65,7 @@ func GetSong(songID string, cfg config.AppConfig) (models.Song, error) {
 	row := conn.QueryRowContext(context.Background(), query, songID)
 
 	if row.Err(); err != nil {
-		cfg.Logger.Println("conn.QueryRow", err)
+		l.Println("conn.QueryRow", err)
 		return song, errors.New("QueryNotSuccesful")
 	}
 
@@ -85,9 +85,9 @@ func GetSong(songID string, cfg config.AppConfig) (models.Song, error) {
 	return song, nil
 }
 
-func CreateSong(s *models.Song, cfg config.AppConfig) error {
+func CreateSong(s *models.Song, db sql.DB, l log.Logger) error {
 	ctx := context.Background()
-	conn, err := cfg.DB.Conn(ctx)
+	conn, err := db.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}
@@ -106,16 +106,16 @@ func CreateSong(s *models.Song, cfg config.AppConfig) error {
 	if _, err := conn.ExecContext(
 		ctx, query, s.ID, s.Artist, s.Name, s.Text, s.Chords, s.Copyright,
 	); err != nil {
-		cfg.Logger.Println("conn.ExecContext:", err)
+		l.Println("conn.ExecContext:", err)
 		return err
 	}
 
 	return nil
 }
 
-func DeleteSong(songID string, cfg config.AppConfig) error {
+func DeleteSong(songID string, db sql.DB, l log.Logger) error {
 	ctx := context.Background()
-	conn, err := cfg.DB.Conn(ctx)
+	conn, err := db.Conn(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}
@@ -125,13 +125,13 @@ func DeleteSong(songID string, cfg config.AppConfig) error {
 
 	res, err := conn.ExecContext(ctx, query, songID)
 	if err != nil {
-		cfg.Logger.Println("conn.ExecContext:", err)
+		l.Println("conn.ExecContext:", err)
 		return err
 	}
 
 	n, err := res.RowsAffected()
 	if err != nil {
-		cfg.Logger.Println("res.RowsAffected:", err)
+		l.Println("res.RowsAffected:", err)
 		return err
 	}
 	if n == 0 {

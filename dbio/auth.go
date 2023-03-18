@@ -2,22 +2,23 @@ package dbio
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/davidkuda/lyricsapi/models"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/davidkuda/lyricsapi/config"
-	"github.com/davidkuda/lyricsapi/models"
 )
 
-func GetUserByName(name string, cfg config.AppConfig) (*models.User, error) {
+func GetUserByName(name string, db sql.DB, logger log.Logger) (*models.User, error) {
 	ctx := context.Background()
-	conn, err := cfg.DB.Conn(ctx)
+	conn, err := db.Conn(ctx)
 	if err != nil {
-		cfg.Logger.Printf("sql.Open: %v\n", err)
+		logger.Printf("sql.Open: %v\n", err)
 	}
 	defer conn.Close()
 
@@ -32,7 +33,7 @@ func GetUserByName(name string, cfg config.AppConfig) (*models.User, error) {
 	row := conn.QueryRowContext(context.Background(), query, name)
 
 	if row.Err(); err != nil {
-		cfg.Logger.Println("conn.QueryRow", err)
+		logger.Println("conn.QueryRow", err)
 		return &user, errors.New("QueryNotSuccesful")
 	}
 
@@ -40,14 +41,14 @@ func GetUserByName(name string, cfg config.AppConfig) (*models.User, error) {
 		&user.Name,
 		&user.Password,
 	); err != nil {
-		cfg.Logger.Println("row.Scan:", err)
+		logger.Println("row.Scan:", err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func CreateNewUser(u *models.User, cfg config.AppConfig) error {
+func CreateNewUser(u *models.User, db sql.DB, l log.Logger) error {
 	// TODO: Add a salt
 	// TODO: Check for length
 	encrPW, err := bcrypt.GenerateFromPassword([]byte(u.Password), 14)
@@ -56,8 +57,9 @@ func CreateNewUser(u *models.User, cfg config.AppConfig) error {
 	}
 
 	ctx := context.Background()
-	conn, err := cfg.DB.Conn(ctx)
+	conn, err := db.Conn(ctx)
 	if err != nil {
+		// TODO: implement error logger?
 		fmt.Fprintf(os.Stderr, "sql.Open: %v\n", err)
 	}
 	defer conn.Close()

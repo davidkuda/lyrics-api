@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetUserByName(name string, db sql.DB, logger log.Logger) (*models.User, error) {
+func GetUserByName(name string, db *sql.DB, logger *log.Logger) (*models.User, error) {
 	ctx := context.Background()
 	conn, err := db.Conn(ctx)
 	if err != nil {
@@ -48,7 +48,7 @@ func GetUserByName(name string, db sql.DB, logger log.Logger) (*models.User, err
 	return &user, nil
 }
 
-func CreateNewUser(u *models.User, db sql.DB, l log.Logger) error {
+func CreateNewUser(u *models.User, db *sql.DB, l *log.Logger) error {
 	// TODO: Add a salt
 	// TODO: Check for length
 	encrPW, err := bcrypt.GenerateFromPassword([]byte(u.Password), 14)

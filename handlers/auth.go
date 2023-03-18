@@ -25,7 +25,7 @@ func (app *Application) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: validate email and password
 
-	user, err := dbio.GetUserByName(input.UserName, app.Config)
+	user, err := dbio.GetUserByName(input.UserName, app.DB, app.Logger)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -73,7 +73,7 @@ func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(data, &newUser)
 
 	// TODO: check if password is hashable, pw + salt should not exceed max length of bcrypt
-	if err := dbio.CreateNewUser(&newUser, app.Config); err != nil {
+	if err := dbio.CreateNewUser(&newUser, app.DB, app.Logger); err != nil {
 		status := http.StatusInternalServerError
 		log.Printf("%s %s: Error: %d %s", r.URL, r.Method, status, err)
 		http.Error(w, http.StatusText(status), status)

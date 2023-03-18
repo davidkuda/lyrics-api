@@ -15,7 +15,7 @@ import (
 
 var ErrSongDoesNotExist = errors.New("Song does not exist")
 
-func ListSongs(db sql.DB) models.Songs {
+func ListSongs(db *sql.DB) models.Songs {
 	ctx := context.Background()
 	conn, err := db.Conn(ctx)
 	if err != nil {
@@ -41,7 +41,7 @@ func ListSongs(db sql.DB) models.Songs {
 	return songs
 }
 
-func GetSong(songID string, db sql.DB, l log.Logger) (models.Song, error) {
+func GetSong(songID string, db *sql.DB, l *log.Logger) (models.Song, error) {
 	ctx := context.Background()
 	conn, err := db.Conn(ctx)
 	if err != nil {
@@ -85,7 +85,7 @@ func GetSong(songID string, db sql.DB, l log.Logger) (models.Song, error) {
 	return song, nil
 }
 
-func CreateSong(s *models.Song, db sql.DB, l log.Logger) error {
+func CreateSong(s *models.Song, db *sql.DB, l *log.Logger) error {
 	ctx := context.Background()
 	conn, err := db.Conn(ctx)
 	if err != nil {
@@ -113,7 +113,7 @@ func CreateSong(s *models.Song, db sql.DB, l log.Logger) error {
 	return nil
 }
 
-func DeleteSong(songID string, db sql.DB, l log.Logger) error {
+func DeleteSong(songID string, db *sql.DB, l *log.Logger) error {
 	ctx := context.Background()
 	conn, err := db.Conn(ctx)
 	if err != nil {

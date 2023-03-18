@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/davidkuda/lyricsapi/config"
 	"github.com/davidkuda/lyricsapi/dbio"
 	"github.com/davidkuda/lyricsapi/models"
 )
@@ -15,7 +14,7 @@ import (
 // /songs
 func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		listSongs(w, r, a.Config)
+		listSongs(w, r, a)
 
 	} else if r.Method == http.MethodPost {
 		// check if user is authenticated
@@ -47,7 +46,7 @@ func (a *Application) HandleSongsSubtreePath(w http.ResponseWriter, r *http.Requ
 	id := strings.TrimPrefix(r.URL.Path, "/songs/")
 
 	if r.Method == http.MethodGet {
-		returnSong(w, r, id, a.Config)
+		returnSong(w, r, id, a)
 
 	} else if r.Method == http.MethodDelete {
 		// check if user is authenticated
@@ -68,16 +67,16 @@ func (app *Application) createSong(w http.ResponseWriter, r *http.Request) {
 	s := models.Song{}
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		app.Config.Logger.Println("io.ReadAll:", err)
+		app.Logger.Println("io.ReadAll:", err)
 	}
 	defer r.Body.Close()
 	if err := json.Unmarshal(data, &s); err != nil {
-		app.Config.Logger.Println("json.Unmarshal:", err)
+		app.Logger.Println("json.Unmarshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if err := dbio.CreateSong(&s, app.Config); err != nil {
-		app.Config.Logger.Println("dbio.CreateSong:", err)
+	if err := dbio.CreateSong(&s, app.DB, app.Logger); err != nil {
+		app.Logger.Println("dbio.CreateSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -86,16 +85,16 @@ func (app *Application) createSong(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) handleDeleteSong(w http.ResponseWriter, songID string) {
-	if err := dbio.DeleteSong(songID, app.Config); err != nil {
-		app.Config.Logger.Println("dbio.DeleteSong:", err)
+	if err := dbio.DeleteSong(songID, app.DB, app.Logger); err != nil {
+		app.Logger.Println("dbio.DeleteSong:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.Write([]byte("Success: Deleted Song with ID " + songID))
 }
 
-func listSongs(w http.ResponseWriter, r *http.Request, cfg config.AppConfig) {
-	songs := dbio.ListSongs(cfg)
+func listSongs(w http.ResponseWriter, r *http.Request, app *Application) {
+	songs := dbio.ListSongs(app.DB)
 	// ? how to only send the fields Song.Artist and Song.SongName? i.e. omit SongText
 	body, err := json.Marshal(songs)
 	if err != nil {
@@ -108,8 +107,8 @@ func listSongs(w http.ResponseWriter, r *http.Request, cfg config.AppConfig) {
 	w.Write(body)
 }
 
-func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg config.AppConfig) {
-	song, err := dbio.GetSong(id, cfg)
+func returnSong(w http.ResponseWriter, r *http.Request, id string, app *Application) {
+	song, err := dbio.GetSong(id, app.DB, app.Logger)
 
 	if err != nil {
 		if err == dbio.ErrSongDoesNotExist {
@@ -119,7 +118,7 @@ func returnSong(w http.ResponseWriter, r *http.Request, id string, cfg config.Ap
 			resp["message"] = err.Error()
 			jsonResp, err := json.Marshal(resp)
 			if err != nil {
-				cfg.Logger.Printf("Error happened in JSON marshal. Err: %s", err)
+				app.Logger.Printf("Error happened in JSON marshal. Err: %s", err)
 			}
 			w.Write(jsonResp)
 			return

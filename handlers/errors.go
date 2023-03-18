@@ -10,13 +10,13 @@ func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, st
 
 	err := app.writeJSON(w, status, env, nil)
 	if err != nil {
-		app.Config.Logger.Println(err)
+		app.Logger.Println(err)
 		w.WriteHeader(500)
 	}
 }
 
 func (app *Application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	app.Config.Logger.Println(err)
+	app.Logger.Println(err)
 	message := "the server encountered a problem and could not process your request"
 	app.errorResponse(w, r, http.StatusInternalServerError, message)
 }

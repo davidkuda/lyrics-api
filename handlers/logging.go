@@ -15,7 +15,7 @@ type requestLog struct {
 
 func (a *Application) LogRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logRequest(r, a.Config.Logger)
+		logRequest(r, a.Logger)
 		next.ServeHTTP(w, r)
 	})
 }

@@ -15,5 +15,5 @@ func setupHandlers(mux *http.ServeMux, app handlers.Application) {
 	mux.HandleFunc("/healthz", app.HandleHealthCheck)
 	mux.HandleFunc("/songs", app.HandleSongsFixedPath)
 	mux.HandleFunc("/songs/", app.HandleSongsSubtreePath)
-	mux.HandleFunc("/v1/tokens/authentication", app.CreateAuthenticationTokenHandler)
+	mux.HandleFunc("/signin", app.Authenticate)
 }

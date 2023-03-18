@@ -53,14 +53,14 @@ func GetSong(songID string, cfg config.AppConfig) (models.Song, error) {
 
 	query := `
 		SELECT
-			song_id,
+			id,
 			artist,
-			song_name,
-			song_text,
+			name,
+			text,
 			chords,
 			copyright
 		FROM songs
-		WHERE song_id = $1`
+		WHERE id = $1`
 
 	row := conn.QueryRowContext(context.Background(), query, songID)
 

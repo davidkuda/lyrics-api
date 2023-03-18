@@ -28,10 +28,7 @@ type Song struct {
 }
 
 type User struct {
-	ID        int       `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	EMail     string    `json:"email"`
+	Name      string    `json:"name"`
 	Password  string    `json:"password"` // a hash of a password
 	CreatedAt time.Time `json:"-"`        // a hyphen means it's not put into the json
 	UpdatedAt time.Time `json:"-"`
@@ -41,7 +38,7 @@ var AnonymousUser = &User{}
 
 // Check if a User instance is the AnonymousUser.
 func (u *User) IsAnonymous() bool {
-    return u == AnonymousUser
+	return u == AnonymousUser
 }
 
 func (u *User) PasswordMatches(plainText string) (bool, error) {

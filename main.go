@@ -5,10 +5,14 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/davidkuda/lyricsapi/config"
 	"github.com/davidkuda/lyricsapi/dbio"
 	"github.com/davidkuda/lyricsapi/handlers"
+
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 )
 
 // in main, it's ok to log.Fatal or to os.Exit(1), but not in other places
@@ -34,6 +38,13 @@ func main() {
 		log.Fatalf("db.Ping(): %v", err)
 	}
 	log.Printf("Connection to database established: %s@%s", dbUser, dbName)
+
+	// Setup SessionManager
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
+	app.SessionManager = sessionManager
 
 	// list allowed cors origins separated by space
 	allowedCORSOrigins := strings.Split(os.Getenv("ALLOWED_CORS_ORIGINS"), " ")

@@ -70,15 +70,15 @@ func GetSong(songID string, cfg config.AppConfig) (models.Song, error) {
 	}
 
 	row.Scan(
-		&song.SongID,
+		&song.ID,
 		&song.Artist,
-		&song.SongName,
-		&song.SongText,
+		&song.Name,
+		&song.Text,
 		&song.Chords,
 		&song.Copyright,
 	)
 
-	if len(song.SongName) == 0 {
+	if len(song.Name) == 0 {
 		return song, ErrSongDoesNotExist
 	}
 
@@ -104,7 +104,7 @@ func CreateSong(s *models.Song, cfg config.AppConfig) error {
 		) VALUES ($1, $2, $3, $4, $5, $6);`
 
 	if _, err := conn.ExecContext(
-		ctx, query, s.SongID, s.Artist, s.SongName, s.SongText, s.Chords, s.Copyright,
+		ctx, query, s.ID, s.Artist, s.Name, s.Text, s.Chords, s.Copyright,
 	); err != nil {
 		cfg.Logger.Println("conn.ExecContext:", err)
 		return err

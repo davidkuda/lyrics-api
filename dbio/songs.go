@@ -23,7 +23,7 @@ func ListSongs(cfg config.AppConfig) models.Songs {
 	}
 	defer conn.Close()
 
-	query := "SELECT artist, song_name, song_id FROM songs ORDER BY artist ASC;"
+	query := "SELECT artist, name, id FROM songs ORDER BY artist ASC;"
 	rows, err := conn.QueryContext(ctx, query)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Query failed: %v\n", err)
@@ -33,8 +33,8 @@ func ListSongs(cfg config.AppConfig) models.Songs {
 	var songs models.Songs
 	var artist, song, song_id string
 	for rows.Next() {
-		rows.Scan(&artist, &song, &song_id)
-		song := models.Song{Artist: artist, SongName: song, SongID: song_id}
+		song := models.Song{}
+		rows.Scan(&song.Artist, &song.Name, &song.ID)
 		songs = append(songs, song)
 	}
 

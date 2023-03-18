@@ -69,10 +69,8 @@ func main() {
 	log.Fatal(http.ListenAndServe(
 		listenAddr,
 		app.LogRequests(
-			app.Authenticate(
-				app.EnableCORS(
-					mux,
-				),
+			app.EnableCORS(
+				mux,
 			),
 		),
 	))

@@ -3,8 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"log"
-
-	"github.com/alexedwards/scs/v2"
 )
 
 type Application struct {
@@ -14,8 +12,6 @@ type Application struct {
 	CORS   struct {
 		TrustedOrigins []string
 	}
-
-	SessionManager *scs.SessionManager
 }
 
 // func (app Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {

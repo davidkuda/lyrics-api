@@ -138,7 +138,7 @@ func generateToken() (string, error) {
 }
 
 func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("session_token")
+	c, err := r.Cookie("session")
 	if err != nil {
 		if err == http.ErrNoCookie {
 			app.errorJSON(w, errors.New("Not Authenticated"), http.StatusUnauthorized)

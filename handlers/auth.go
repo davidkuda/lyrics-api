@@ -160,7 +160,6 @@ func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request)
 
 	if t.Expiry.Before(time.Now()) {
 		app.errorJSON(w, errors.New("Session Expired"), http.StatusUnauthorized)
-		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 

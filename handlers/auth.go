@@ -66,7 +66,12 @@ func (app *Application) Authenticate(w http.ResponseWriter, r *http.Request) {
 		app.Logger.Println(err)
 	}
 
-	// TODO: send session ID as cookie
+	// send session token as cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:    "session",
+		Value:   t.Token,
+		Expires: t.Expiry,
+	})
 
 	w.WriteHeader(http.StatusCreated)
 }

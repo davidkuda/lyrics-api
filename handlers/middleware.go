@@ -21,6 +21,15 @@ func (app *Application) EnableCORS(next http.Handler) http.Handler {
 			}
 		}
 
+		// Browsers will send a CORS preflight request before
+		// the actual request with the OPTIONS method and will
+		// only continue with the next request if the preflight
+		// returns a success.
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }

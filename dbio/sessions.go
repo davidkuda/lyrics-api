@@ -71,3 +71,24 @@ func GetSessionToken(token string, db *sql.DB) (models.SessionToken, error) {
 
 	return t, nil
 }
+
+func DeleteExpiredTokens(db *sql.DB) error {
+	ctx := context.Background()
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return fmt.Errorf("sql.Open: %v\n", err)
+	}
+	defer conn.Close()
+
+	query := `
+		DELETE FROM sessions
+		WHERE expiry < NOW();
+	`
+
+	_, err = conn.ExecContext(ctx, query)
+	if err != nil {
+		return fmt.Errorf("conn.ExecContext: %v\n", err)
+	}
+	
+	return nil
+}

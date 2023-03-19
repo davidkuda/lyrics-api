@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -134,4 +135,34 @@ func generateToken() (string, error) {
 	tokenPlaintext := base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(randomBytes)
 
 	return tokenPlaintext, nil
+}
+
+func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			app.errorJSON(w, errors.New("Not Authenticated"), http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	clientToken := c.Value
+
+	t, err := dbio.GetSessionToken(clientToken, app.DB)
+	if err != nil {
+		if err == dbio.ErrNoTokenFound {
+			app.errorJSON(w, errors.New("Invalid Session Token"), http.StatusUnauthorized)
+			return
+		}
+	}
+
+	if t.Expiry.Before(time.Now()) {
+		app.errorJSON(w, errors.New("Session Expired"), http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, envelope{"session": t.UserName}, nil)
 }

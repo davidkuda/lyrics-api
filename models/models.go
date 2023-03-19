@@ -27,6 +27,12 @@ type Song struct {
 	Covers    []string `json:"covers,omitempty"`
 }
 
+type SessionToken struct {
+	Token    string
+	UserName string
+	Expiry   time.Time
+}
+
 type User struct {
 	Name      string    `json:"name"`
 	Password  string    `json:"password"` // a hash of a password

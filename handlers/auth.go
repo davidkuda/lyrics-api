@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/davidkuda/lyricsapi/dbio"
 	"github.com/davidkuda/lyricsapi/models"
@@ -45,7 +48,23 @@ func (app *Application) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: create session
+	// create session token
+	t := models.SessionToken{}
+	t.UserName = input.UserName
+
+	ttl := 24 * time.Hour // ttl == time to live
+	t.Expiry = time.Now().Add(ttl)
+
+	token, err := generateToken()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	t.Token = token
+
+	if err := dbio.CreateNewSession(t, app.DB); err != nil {
+		app.Logger.Println(err)
+	}
 
 	// TODO: send session ID as cookie
 
@@ -82,4 +101,30 @@ func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Success: User Created"))
+}
+
+func generateToken() (string, error) {
+	// Initialize a zero-valued byte slice with a length of 16 bytes.
+	randomBytes := make([]byte, 16)
+
+	// Use the Read() function from the crypto/rand package to fill the byte slice with
+	// random bytes from your operating system's CSPRNG. This will return an error if
+	// the CSPRNG fails to function correctly.
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return "", err
+	}
+
+	// Encode the byte slice to a base-32-encoded string and assign it to the token
+	// Plaintext field. This will be the token string that we send to the user in their
+	// welcome email. They will look similar to this:
+	//
+	// Y3QMGX3PJ3WLRL2YRTQGQ6KRHU
+	//
+	// Note that by default base-32 strings may be padded at the end with the =
+	// character. We don't need this padding character for the purpose of our tokens, so
+	// we use the WithPadding(base32.NoPadding) method in the line below to omit them.
+	tokenPlaintext := base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(randomBytes)
+
+	return tokenPlaintext, nil
 }

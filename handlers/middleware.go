@@ -33,17 +33,3 @@ func (app *Application) EnableCORS(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-// use this on route handlers (notice it returns a http.HandlerFunc)
-func (app *Application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := app.contextGetUser(r)
-
-		if user.IsAnonymous() {
-			app.authenticationRequiredResponse(w, r)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}

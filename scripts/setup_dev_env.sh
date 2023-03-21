@@ -5,4 +5,4 @@ export DB_USER="lyricsapi"
 export DB_PASSWORD="lyricsapi"
 
 # CORS
-export ALLOWED_CORS_ORIGINS="http://localhost:3000 http://localhost:8008 http://localhost:3001"
+export ALLOWED_CORS_ORIGINS="http://localhost:8008"

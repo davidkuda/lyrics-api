@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/davidkuda/lyricsapi/dbio"
 	"golang.org/x/crypto/bcrypt"
@@ -17,19 +16,19 @@ func main() {
 	conn := DBConn()
 	defer conn.Close()
 
-	email := flag.String("email", "", "The email address of the new user")
+	userName := flag.String("user-name", "", "The name of the new user")
 	password := flag.String("password", "", "The password of the new user")
 	deleteUser := flag.Bool("delete-user", false, "bool: whether user with given email address should be deleted")
 	flag.Parse()
 
-	if len(*email) == 0 {
+	if len(*userName) == 0 {
 		log.Fatal("Make sure to pass an email address")
 	}
 
 	if *deleteUser {
-		delete(*email, conn)
+		delete(*userName, conn)
 	} else {
-		create(*email, *password, conn)
+		create(*userName, *password, conn)
 	}
 }
 
@@ -61,7 +60,7 @@ func DBConn() *sql.Conn {
 func delete(email string, conn *sql.Conn) {
 	query := `
 			DELETE FROM users
-			WHERE email = $1
+			WHERE name = $1
 		`
 
 	ctx := context.Background()
@@ -81,7 +80,7 @@ func delete(email string, conn *sql.Conn) {
 	fmt.Println("Deleted user with email", email)
 }
 
-func create(email, password string, conn *sql.Conn) {
+func create(userName, password string, conn *sql.Conn) {
 	if len(password) == 0 {
 		log.Fatal("Make sure to pass a password")
 	}
@@ -92,12 +91,12 @@ func create(email, password string, conn *sql.Conn) {
 	}
 
 	query := `
-		INSERT INTO users (email, password, created_at)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (name, password)
+		VALUES ($1, $2)
 	`
 
 	ctx := context.Background()
-	res, err := conn.ExecContext(ctx, query, email, encrPW, time.Now())
+	res, err := conn.ExecContext(ctx, query, userName, encrPW)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,5 +109,5 @@ func create(email, password string, conn *sql.Conn) {
 		log.Fatalf("expected 1 row to be inserted, Got: %v", nRows)
 	}
 
-	fmt.Println("Created user", email)
+	fmt.Println("Created user", userName)
 }

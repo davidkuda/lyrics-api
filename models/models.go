@@ -37,7 +37,6 @@ type User struct {
 	Name      string    `json:"name"`
 	Password  string    `json:"password"` // a hash of a password
 	CreatedAt time.Time `json:"-"`        // a hyphen means it's not put into the json
-	UpdatedAt time.Time `json:"-"`
 }
 
 var AnonymousUser = &User{}

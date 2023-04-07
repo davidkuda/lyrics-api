@@ -71,7 +71,6 @@ func (app *Application) Authenticate(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session",
 		Value:    t.Token,
-		Domain:   "kuda.ai",
 		Expires:  t.Expiry,
 		Secure:   true,
 		HttpOnly: true,

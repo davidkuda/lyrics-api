@@ -56,12 +56,10 @@ func GetSessionToken(token string, db *sql.DB) (models.SessionToken, error) {
 		WHERE token = $1;
 	`
 
-	rows, err := conn.QueryContext(ctx, query, token)
-	if err != nil {
-		return t, fmt.Errorf("conn.QueryContext: %v\n", err)
-	}
+	row := conn.QueryRowContext(ctx, query, token)
 
-	if err = rows.Scan(&t.Token, &t.UserName, &t.Expiry); err != nil {
+	if err = row.Scan(&t.Token, &t.UserName, &t.Expiry); err != nil {
+		fmt.Println(err)
 		return t, fmt.Errorf("rows.Scan: %v\n", err)
 	}
 

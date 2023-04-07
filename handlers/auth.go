@@ -138,6 +138,10 @@ func generateToken() (string, error) {
 }
 
 func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		app.errorJSON(w, errors.New("Method not allowed"), http.StatusMethodNotAllowed)
+		return
+	}
 	c, err := r.Cookie("session")
 	if err != nil {
 		if err == http.ErrNoCookie {

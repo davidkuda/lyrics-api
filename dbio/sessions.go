@@ -53,7 +53,7 @@ func GetSessionToken(token string, db *sql.DB) (models.SessionToken, error) {
 	query := `
 		SELECT token, user_name, expiry
 		FROM sessions
-		WHERE token = '$1';
+		WHERE token = $1;
 	`
 
 	rows, err := conn.QueryContext(ctx, query, token)

@@ -75,7 +75,6 @@ func (app *Application) Authenticate(w http.ResponseWriter, r *http.Request) {
 		Expires:  t.Expiry,
 		Secure:   true,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
 	})
 
 	w.WriteHeader(http.StatusCreated)

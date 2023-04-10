@@ -83,7 +83,20 @@ func (app *Application) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) SignOut(w http.ResponseWriter, r *http.Request) {
 	// read cookie val
+	c, err := r.Cookie("session")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			app.errorJSON(w, errors.New("Not Authenticated"), http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sessionToken := c.Value
+
 	// delete cookie in database
+	dbio.DeleteToken(sessionToken, app.DB)
 
 	// delete cookie from browser
 	http.SetCookie(w, &http.Cookie{

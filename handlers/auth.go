@@ -189,10 +189,13 @@ func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request)
 
 	t, err := dbio.GetSessionToken(clientToken, app.DB)
 	if err != nil {
+		app.Logger.Println("dbio.GetSessionToken:", err)
 		if err == dbio.ErrNoTokenFound {
 			app.errorJSON(w, errors.New("Invalid Session Token"), http.StatusUnauthorized)
 			return
 		}
+		app.errorJSON(w, errors.New("sum ting wong"), http.StatusInternalServerError)
+		return
 	}
 
 	if t.Expiry.Before(time.Now()) {

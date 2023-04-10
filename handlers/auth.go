@@ -109,7 +109,7 @@ func (app *Application) SignOut(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {

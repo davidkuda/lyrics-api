@@ -81,6 +81,24 @@ func (app *Application) Authenticate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+func (app *Application) SignOut(w http.ResponseWriter, r *http.Request) {
+	// read cookie val
+	// delete cookie in database
+
+	// delete cookie from browser
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session",
+		Value:    "",
+		Domain:   "lyricsapi.kuda.ai",
+		Path:     "/",
+		MaxAge:   -1, // this will delete the cookie
+		Secure:   true,
+		HttpOnly: true,
+	})
+
+	w.WriteHeader(http.StatusAccepted)
+}
+
 func (app *Application) Signup(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

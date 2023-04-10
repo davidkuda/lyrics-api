@@ -16,5 +16,6 @@ func setupHandlers(mux *http.ServeMux, app handlers.Application) {
 	mux.HandleFunc("/songs", app.HandleSongsFixedPath)
 	mux.HandleFunc("/songs/", app.HandleSongsSubtreePath)
 	mux.HandleFunc("/signin", app.Authenticate)
+	mux.HandleFunc("/signout", app.SignOut)
 	mux.HandleFunc("/session", app.HasActiveSession) // check if active session
 }

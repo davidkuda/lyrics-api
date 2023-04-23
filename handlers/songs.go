@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -21,7 +20,6 @@ func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Reques
 
 	ok, _ := a.hasValidSessionCookie(w, r)
 	if !ok {
-		a.errorJSON(w, errors.New("Unauthorized"), http.StatusUnauthorized)
 		a.Logger.Println("HandleSongsFixedPath: Unauthorized Request")
 		return
 	}
@@ -51,7 +49,8 @@ func (a *Application) HandleSongsSubtreePath(w http.ResponseWriter, r *http.Requ
 
 	ok, _ := a.hasValidSessionCookie(w, r)
 	if !ok {
-		a.errorJSON(w, errors.New("HandleSong beyond Get: Invalid Session"), http.StatusUnauthorized)
+		a.Logger.Println("HandleSong beyond Get: Invalid Session")
+		return
 	}
 
 	if r.Method == http.MethodDelete {

@@ -178,7 +178,7 @@ func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request)
 
 	ok, userName := app.hasValidSessionCookie(w, r)
 	if !ok {
-		app.errorJSON(w, errors.New("No Active Session"), http.StatusUnauthorized)
+		return
 	}
 
 	app.writeJSON(w, http.StatusOK, envelope{"session": userName}, nil)

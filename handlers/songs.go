@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -18,24 +19,19 @@ func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	ok, _ := a.hasValidSessionCookie(w, r)
+	if !ok {
+		a.errorJSON(w, errors.New("Unauthorized"), http.StatusUnauthorized)
+		a.Logger.Println("HandleSongsFixedPath: Unauthorized Request")
+		return
+	}
+
 	if r.Method == http.MethodPost {
-		// check if user is authenticated
-		user := a.contextGetUser(r)
-		if user.IsAnonymous() {
-			a.authenticationRequiredResponse(w, r)
-			return
-		}
 		a.createSong(w, r)
 		return
 	}
 
 	if r.Method == http.MethodOptions {
-		// CORS preflight request
-		user := a.contextGetUser(r)
-		if user.IsAnonymous() {
-			a.authenticationRequiredResponse(w, r)
-			return
-		}
 		w.WriteHeader(http.StatusOK)
 		return
 	}

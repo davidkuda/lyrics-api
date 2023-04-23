@@ -15,8 +15,10 @@ import (
 func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		listSongs(w, r, a)
+		return
+	}
 
-	} else if r.Method == http.MethodPost {
+	if r.Method == http.MethodPost {
 		// check if user is authenticated
 		user := a.contextGetUser(r)
 		if user.IsAnonymous() {
@@ -24,8 +26,10 @@ func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Reques
 			return
 		}
 		a.createSong(w, r)
+		return
+	}
 
-	} else if r.Method == http.MethodOptions {
+	if r.Method == http.MethodOptions {
 		// CORS preflight request
 		user := a.contextGetUser(r)
 		if user.IsAnonymous() {
@@ -34,11 +38,10 @@ func (a *Application) HandleSongsFixedPath(w http.ResponseWriter, r *http.Reques
 		}
 		w.WriteHeader(http.StatusOK)
 		return
-
-	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
 	}
+
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	return
 }
 
 // /songs/:id

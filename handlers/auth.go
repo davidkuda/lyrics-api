@@ -175,14 +175,24 @@ func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request)
 		app.errorJSON(w, errors.New("Method not allowed"), http.StatusMethodNotAllowed)
 		return
 	}
+
+	ok, userName := app.hasValidSessionCookie(w, r)
+	if !ok {
+		app.errorJSON(w, errors.New("No Active Session"), http.StatusUnauthorized)
+	}
+
+	app.writeJSON(w, http.StatusOK, envelope{"session": userName}, nil)
+}
+
+func (app *Application) hasValidSessionCookie(w http.ResponseWriter, r *http.Request) (validSession bool, sessionContext string) {
 	c, err := r.Cookie("session")
 	if err != nil {
 		if err == http.ErrNoCookie {
 			app.errorJSON(w, errors.New("Not Authenticated"), http.StatusUnauthorized)
-			return
+			return false, ""
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
+		return false, ""
 	}
 
 	clientToken := c.Value
@@ -192,16 +202,16 @@ func (app *Application) HasActiveSession(w http.ResponseWriter, r *http.Request)
 		app.Logger.Println("dbio.GetSessionToken:", err)
 		if err == dbio.ErrNoTokenFound {
 			app.errorJSON(w, errors.New("Invalid Session Token"), http.StatusUnauthorized)
-			return
+			return false, ""
 		}
 		app.errorJSON(w, errors.New("sum ting wong"), http.StatusInternalServerError)
-		return
+		return false, ""
 	}
 
 	if t.Expiry.Before(time.Now()) {
 		app.errorJSON(w, errors.New("Session Expired"), http.StatusUnauthorized)
-		return
+		return false, ""
 	}
 
-	app.writeJSON(w, http.StatusOK, envelope{"session": t.UserName}, nil)
+	return true, t.UserName
 }

@@ -47,20 +47,21 @@ func (a *Application) HandleSongsSubtreePath(w http.ResponseWriter, r *http.Requ
 
 	if r.Method == http.MethodGet {
 		returnSong(w, r, id, a)
-
-	} else if r.Method == http.MethodDelete {
-		// check if user is authenticated
-		user := a.contextGetUser(r)
-		if user.IsAnonymous() {
-			a.authenticationRequiredResponse(w, r)
-			return
-		}
-		a.handleDeleteSong(w, id)
-
-	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+
+	ok, _ := a.hasValidSessionCookie(w, r)
+	if !ok {
+		a.errorJSON(w, errors.New("HandleSong beyond Get: Invalid Session"), http.StatusUnauthorized)
+	}
+
+	if r.Method == http.MethodDelete {
+		a.handleDeleteSong(w, id)
+		return
+	}
+
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	return
 }
 
 func (app *Application) createSong(w http.ResponseWriter, r *http.Request) {

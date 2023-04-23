@@ -80,7 +80,8 @@ func (app *Application) createSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("Success: Created New Song"))
+	env := envelope{"status": "Success: Created New Song"} 
+	app.writeJSON(w, http.StatusCreated, env, nil)
 }
 
 func (app *Application) handleDeleteSong(w http.ResponseWriter, songID string) {

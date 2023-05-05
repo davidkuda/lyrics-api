@@ -19,6 +19,7 @@ func main() {
 	userName := flag.String("user-name", "", "The name of the new user")
 	password := flag.String("password", "", "The password of the new user")
 	deleteUser := flag.String("delete-user", "", "A user that should be removed from the DB")
+	listUsers := flag.Bool("list-users", false, "Bool: List all registered users in DB")
 	flag.Parse()
 
 	if *userName != "" && *password != "" {
@@ -28,6 +29,11 @@ func main() {
 
 	if *deleteUser != "" {
 		delete(*userName, conn)
+		return
+	}
+
+	if *listUsers {
+		list(conn)
 		return
 	}
 
@@ -112,4 +118,20 @@ func create(userName, password string, conn *sql.Conn) {
 	}
 
 	fmt.Println("Created user", userName)
+}
+
+func list(conn *sql.Conn) {
+	ctx := context.Background()
+	query := "SELECT name FROM users;"
+	res, err := conn.QueryContext(ctx, query)
+	if err != nil {
+		log.Fatalf("conn.QueryContext: %v", err)
+	}
+	fmt.Println("")
+	fmt.Println("Currently Registered Users:")
+	var n string
+	for res.Next() {
+		res.Scan(&n)
+		fmt.Printf("- %s\n", n)
+	}
 }

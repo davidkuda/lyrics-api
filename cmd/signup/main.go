@@ -28,7 +28,7 @@ func main() {
 	}
 
 	if *deleteUser != "" {
-		delete(*userName, conn)
+		delete(*deleteUser, conn)
 		return
 	}
 

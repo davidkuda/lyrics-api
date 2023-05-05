@@ -18,18 +18,20 @@ func main() {
 
 	userName := flag.String("user-name", "", "The name of the new user")
 	password := flag.String("password", "", "The password of the new user")
-	deleteUser := flag.Bool("delete-user", false, "bool: whether user with given email address should be deleted")
+	deleteUser := flag.String("delete-user", "", "A user that should be removed from the DB")
 	flag.Parse()
 
-	if len(*userName) == 0 {
-		log.Fatal("Make sure to pass an email address")
+	if *userName != "" && *password != "" {
+		create(*userName, *password, conn)
+		return
 	}
 
-	if *deleteUser {
+	if *deleteUser != "" {
 		delete(*userName, conn)
-	} else {
-		create(*userName, *password, conn)
+		return
 	}
+
+	log.Fatal("Did you use the CLI correctly? Nothing happened.")
 }
 
 func DBConn() *sql.Conn {

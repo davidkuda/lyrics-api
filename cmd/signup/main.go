@@ -16,14 +16,14 @@ func main() {
 	conn := DBConn()
 	defer conn.Close()
 
-	userName := flag.String("user-name", "", "The name of the new user")
+	createUser := flag.String("create-user", "", "The name of the new user")
 	password := flag.String("password", "", "The password of the new user")
 	deleteUser := flag.String("delete-user", "", "A user that should be removed from the DB")
 	listUsers := flag.Bool("list-users", false, "Bool: List all registered users in DB")
 	flag.Parse()
 
-	if *userName != "" && *password != "" {
-		create(*userName, *password, conn)
+	if *createUser != "" && *password != "" {
+		create(*createUser, *password, conn)
 		return
 	}
 
@@ -132,6 +132,6 @@ func list(conn *sql.Conn) {
 	var n string
 	for res.Next() {
 		res.Scan(&n)
-		fmt.Printf("- %s\n", n)
+		fmt.Printf("  - %s\n", n)
 	}
 }
